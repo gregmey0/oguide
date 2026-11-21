@@ -275,9 +275,9 @@ const Paths={mem:{},graphs:{},
         this.mem[c.id]=data;delete this.graphs[c.id];
         if(!store.set(this.key(c.id),data))toast('Chemins chargés, mais trop volumineux pour être gardés hors connexion.',true);
         return data;
-      }catch(e){last=e}
+      }catch(e){last=e&&e.name==='AbortError'?new Error('serveur trop lent'):e instanceof TypeError?new Error('pas de connexion internet'):e}
     }
-    throw last||new Error('pas de réseau');
+    throw last||new Error('pas de connexion internet');
   },
   compact(j,b){const idx=new Map(),nodes=[],ways=[];
     for(const el of j.elements||[])if(el.type==='node'){idx.set(el.id,nodes.length);nodes.push([+el.lat.toFixed(6),+el.lon.toFixed(6)])}
