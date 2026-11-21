@@ -31,7 +31,8 @@ html = f"""<!DOCTYPE html>
 <title>O'Guide – Course d'orientation accessible</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="O'Guide">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -54,7 +55,7 @@ icon_svg = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rec
 
 try:
     from PIL import Image, ImageDraw
-    for size in (192, 512):
+    for size in (180, 192, 512):
         s = size / 512
         im = Image.new("RGBA", (size, size), (0, 0, 0, 255))
         d = ImageDraw.Draw(im)
@@ -86,8 +87,8 @@ manifest = {
 (DIST / "manifest.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, indent=2))
 
 sw = """// O'Guide – service worker : l'appli fonctionne hors connexion une fois ouverte.
-const CACHE = 'oguide-v1.3.0';
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'];
+const CACHE = 'oguide-v1.3.1';
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });

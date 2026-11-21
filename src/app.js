@@ -1,10 +1,12 @@
 'use strict';
 (function(){
-const VERSION='1.3.0';
+const VERSION='1.3.1';
 const CAP=window.capacitorExports||null;
 const NATIVE=!!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform());
 const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications')}:{};
-document.documentElement.classList.add(NATIVE?'native':'web');
+const IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const STANDALONE=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+document.documentElement.classList.add(NATIVE?'native':'web');if(IOS)document.documentElement.classList.add('ios');
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -464,7 +466,7 @@ const Home={deferred:null,
     const w=[];
     if(!NATIVE&&!window.isSecureContext)w.push('Le GPS ne fonctionne que si l\'appli est ouverte en <b>https</b>.');
     if(!NATIVE&&!('speechSynthesis' in window))w.push('Synthèse vocale indisponible dans ce navigateur : utilise Chrome (Android) ou Safari (iPhone).');
-    $('#homeWarn').innerHTML=w.map(x=>`<div class="warnbox">${x}</div>`).join('');
+    $('#homeWarn').innerHTML=w.map(x=>`<div class="warnbox">${x}</div>`).join('')+(IOS&&!STANDALONE&&!NATIVE?`<div class="ioshint">📲 Sur iPhone : touche <span class="shr">Partager ⬆︎</span> en bas de Safari, puis « Sur l'écran d'accueil ». O'Guide s'ouvrira ensuite comme une appli, en plein écran et même sans réseau.</div>`:'');
     $('#hVersion').textContent='Version '+VERSION+(NATIVE?' · application Android':' · fonctionne hors connexion une fois installée');
   }
 };
