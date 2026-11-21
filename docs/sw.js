@@ -1,5 +1,5 @@
 // O'Guide – service worker : l'appli fonctionne hors connexion une fois ouverte.
-const CACHE = 'oguide-v1.2.1';
+const CACHE = 'oguide-v1.3.0';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

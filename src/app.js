@@ -1,6 +1,6 @@
 'use strict';
 (function(){
-const VERSION='1.2.0';
+const VERSION='1.3.0';
 const CAP=window.capacitorExports||null;
 const NATIVE=!!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform());
 const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications')}:{};
@@ -17,10 +17,11 @@ const store={
   del(k){try{localStorage.removeItem(k)}catch(e){}}
 };
 const K={courses:'oguide.courses.v1',settings:'oguide.settings.v1',draft:'oguide.draft.v1',results:'oguide.results.v1'};
-const DEFAULTS={profile:'blind',voiceMode:'app',interval:30,zoneInterval:15,dirFormat:'clock',headingRef:'phone',rate:1,beep:true,approachDist:50,stereo:false,radius:10,vibrate:true,layer:'ign',contrast:'high',mapStyle:'paths-light',showRoute:true,showDone:false,avgSeconds:5,recordTrack:true,sim:false,_v:2};
+const DEFAULTS={profile:'blind',voiceMode:'app',interval:30,zoneInterval:15,dirFormat:'clock',headingRef:'auto',rate:1,beep:true,approachDist:50,stereo:false,radius:10,vibrate:true,layer:'ign',contrast:'high',mapStyle:'paths-light',showRoute:false,showDone:false,avgSeconds:5,recordTrack:true,sim:false,_v:3};
 let settings=Object.assign({},DEFAULTS,store.get(K.settings,{}));
 const saveSettings=()=>store.set(K.settings,settings);
-if((settings._v||1)<2){Object.assign(settings,{approachDist:50,dirFormat:'clock',headingRef:'phone',mapStyle:'paths-light',showRoute:true,_v:2});saveSettings()}
+if((settings._v||1)<2)Object.assign(settings,{approachDist:50,dirFormat:'clock',mapStyle:'paths-light',_v:2});
+if(settings._v<3){Object.assign(settings,{headingRef:'auto',showRoute:false,_v:3});saveSettings()}
 let courses=store.get(K.courses,[]);
 function saveCourses(){if(!store.set(K.courses,courses))toast('Mémoire du navigateur indisponible : pense à exporter le GPX !',true)}
 let results=store.get(K.results,[]);
@@ -182,30 +183,45 @@ const Compass={active:false,x:0,y:0,val:null,lastT:0,onChange:null,_thr:0,
     }catch(e){return false}
   },
   _scr(){try{return(screen.orientation&&screen.orientation.angle)||window.orientation||0}catch(e){return 0}},
-  _ios(e){if(e.webkitCompassHeading!=null){Compass._set(e.webkitCompassHeading+Compass._scr());return}
+  _tilt(e){if(e.beta!=null){this.beta=e.beta;this.gamma=e.gamma||0;this.btT=Date.now()}},
+  flat(){return this.active&&Date.now()-(this.btT||0)<2000&&Math.abs(this.beta)<35&&Math.abs(this.gamma)<35},
+  _ios(e){if(e.webkitCompassHeading!=null){Compass._tilt(e);Compass._set(e.webkitCompassHeading+Compass._scr());return}
     if(e.absolute&&!('ondeviceorientationabsolute' in window))Compass._abs(e)},
-  _abs(e){if(e.alpha==null)return;if(e.type==='deviceorientation'&&!e.absolute)return;const h=tiltHeading(e.alpha,e.beta||0,e.gamma||0);if(h!=null)Compass._set(h+Compass._scr())},
+  _abs(e){if(e.alpha==null)return;if(e.type==='deviceorientation'&&!e.absolute)return;Compass._tilt(e);const h=tiltHeading(e.alpha,e.beta||0,e.gamma||0);if(h!=null)Compass._set(h+Compass._scr())},
   _set(h){h=((h%360)+360)%360;const now=Date.now(),dt=this.val==null?1:Math.min(1,Math.max(0.005,(now-this.lastT)/1000)),k=1-Math.exp(-dt/0.3);
     this.x=this.x*(1-k)+Math.cos(h*RAD)*k;this.y=this.y*(1-k)+Math.sin(h*RAD)*k;
     this.val=(Math.atan2(this.y,this.x)/RAD+360)%360;this.lastT=Date.now();
     if(this.onChange&&Date.now()-this._thr>150){this._thr=Date.now();this.onChange(this.val)}},
   get(){return(this.active&&Date.now()-this.lastT<3000)?this.val:null}
 };
-const Walk={h:null,t:0,hist:[],
+const Walk={h:null,t:0,movT:0,hist:[],
   update(f){
-    if(f.heading!=null&&f.speed>0.6){this.h=f.heading;this.t=Date.now()}
-    const H=this.hist;H.push(f);while(H.length>30)H.shift();
-    if(f.heading!=null&&f.speed>0.6)return;
+    const H=this.hist;H.push(f);while(H.length>40)H.shift();
+    /* en mouvement ? vitesse GPS, ou déplacement réel sur les 5 à 12 dernières secondes */
+    let moving=f.speed!=null&&f.speed>0.7;
+    if(!moving)for(let i=H.length-2;i>=0;i--){const dt=(f.t-H[i].t)/1000;if(dt>=5){const d=dist(H[i],f);moving=dt<=12&&d/dt>0.6&&d>Math.max(4,f.acc*0.7);break}}
+    if(moving)this.movT=Date.now();
+    if(f.heading!=null&&f.speed>0.6){this.h=f.heading;this.t=Date.now();return}
     for(let i=H.length-2;i>=0;i--){const d=dist(H[i],f);if(d>=8){if(f.t-H[i].t<25000&&d>Math.max(6,f.acc*0.8)){this.h=bearing(H[i],f);this.t=Date.now()}break}}
   },
-  get(){return Date.now()-this.t<15000?this.h:null}
+  moving(){return Date.now()-this.movT<3500},
+  get(maxAge=15000){return this.h!=null&&Date.now()-this.t<maxAge?this.h:null}
 };
 GPS.on(f=>Walk.update(f));
+/* Direction de référence (12 h = devant)
+   - mixte (défaut) : en marche → sens de déplacement ; à l'arrêt, écran allumé et téléphone à plat → boussole ;
+     à l'arrêt, écran éteint ou téléphone vertical → dernier sens de déplacement
+   - boussole : toujours la boussole (sauf écran éteint / mode poche)
+   - déplacement : toujours le sens de déplacement */
 function currentHeading(){
-  const ref=Lock.on?'walk':settings.headingRef;
-  if(ref!=='walk'){const c=Compass.get();if(c!=null)return{h:c,src:'boussole'}}
-  const w=Walk.get();if(w!=null)return{h:w,src:'marche'};
-  return null;
+  const mode=settings.headingRef||'auto',screenOff=Lock.on||document.visibilityState==='hidden';
+  const comp=()=>{const c=Compass.get();return c!=null?{h:c,src:'boussole'}:null};
+  const walk=age=>{const w=Walk.get(age);return w!=null?{h:w,src:'marche'}:null};
+  if(mode==='walk'||screenOff)return walk(600000);
+  if(mode==='phone')return comp()||walk(15000);
+  if(Walk.moving())return walk(15000)||comp();
+  if(Compass.flat())return comp()||walk(600000);
+  return walk(600000)||comp();
 }
 
 /* ---------------- Carte ---------------- */
@@ -433,7 +449,7 @@ function show(id){
 window.addEventListener('popstate',()=>{
   if(current==='home')return;
   try{history.pushState({s:current},'')}catch(e){}
-  if(current==='run'){if(!Lock.on)Run.askQuit();return}
+  if(current==='run'){if(RunOpts.open)RunOpts.hide();else if(!Lock.on)Run.askQuit();return}
   if(current==='create'){Create.askBack();return}
   if(current==='setup'){Setup.back();return}
   const par=PARENT[current]||'home';if(par==='library')Lib.open();else show(par);
@@ -665,24 +681,31 @@ const Setup={course:null,
 };
 $('#suBack').onclick=()=>Setup.back();
 function bindSettings(){
-  $$('#setup [data-s]').forEach(el=>{
+  $$('#settingsBox [data-s]').forEach(el=>{
     const k=el.dataset.s;
     if(el.classList.contains('seg')){
       const btns=[...el.querySelectorAll('button')];
       const upd=()=>btns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===settings[k])));upd();
-      btns.forEach(b=>b.onclick=()=>{settings[k]=b.dataset.v;saveSettings();upd()});
+      btns.forEach(b=>b.onclick=()=>{settings[k]=b.dataset.v;saveSettings();upd();onSetting(k)});
     }else if(el.type==='checkbox'){el.checked=!!settings[k];el.onchange=()=>{settings[k]=el.checked;saveSettings();onSetting(k)}}
     else{el.value=String(settings[k]);const h=()=>{settings[k]=('num' in el.dataset)?parseFloat(el.value):el.value;saveSettings();onSetting(k)};el.onchange=h;if(el.type==='range')el.oninput=h}
   });
 }
 function onSetting(k){
-  if(k==='layer'||k==='contrast'||k==='mapStyle'){Run.pathsDrawn=false;allMaps.forEach(setMapStyle);if(Lib.map&&Lib.cur)Lib.draw(false)}
-  if(k==='sim'){applySimUI();GPS.stop();toast(settings.sim?'Mode simulation activé':'Mode simulation désactivé : retour au vrai GPS')}
+  const live=current==='run'&&!Run.ended;
+  if(k==='layer'||k==='contrast'||k==='mapStyle'){Run.pathsDrawn=false;allMaps.forEach(setMapStyle);if(Lib.map&&Lib.cur)Lib.draw(false);if(live){Run.ensurePaths();Run.redrawMap()}}
+  if(k==='sim'){applySimUI();GPS.stop();toast(settings.sim?'Mode simulation activé':'Mode simulation désactivé : retour au vrai GPS');if(live||current==='create')GPS.start();if(live)simPad($('#runSimPad'),Run.simExtra())}
+  if(!live)return;
+  if(k==='profile')Run.applyProfile();
+  if(k==='showRoute'){Run.route=null;Run.lastRouteT=0;Run.ensurePaths();Run.updateMap();if(!settings.showRoute)$('#runRoute').textContent=''}
+  if(k==='radius'||k==='showDone')Run.redrawMap();
+  if(k==='voiceMode'&&settings.voiceMode!=='app')Voice.stop();
+  if(k==='dirFormat'||k==='headingRef')Run.renderDir();
 }
 $('#testVoice').onclick=()=>{Snd.unlock();Voice.unlock();const m=settings.voiceMode;if(m==='off'){toast('Voix désactivée');return}Voice.say('Balise 3 : 120 mètres, azimut 45 degrés, nord-est. Vous vous rapprochez.');if(m==='sr')toast('Le texte est envoyé au lecteur d\'écran')};
 $('#testBeep').onclick=async()=>{Snd.unlock();for(let i=0;i<14;i++){const k=1-i/13;Snd.tone(1500-k*900,0.08,{vol:0.5});await sleep(180+k*1100)}Snd.chime();vib([200,100,200])};
 $('#compassBtn').onclick=async()=>{const ok=await Compass.enable();if(!ok)toast('Boussole refusée ou indisponible sur cet appareil',true);setTimeout(()=>Setup.compassUI(),800)};
-Compass.onChange=()=>{if(current==='setup')Setup.compassUI();if(current==='run')Run.renderDir()};
+Compass.onChange=()=>{if(current==='setup'||RunOpts.open)Setup.compassUI();if(current==='run')Run.renderDir()};
 $('#startRun').onclick=()=>{
   Snd.unlock();Voice.unlock();Compass.enable();
   if(settings.voiceMode==='app'&&!NATIVE&&!('speechSynthesis' in window))toast('Synthèse vocale indisponible ici',true);
@@ -698,17 +721,11 @@ const Run={map:null,lay:null,
     $('#runRoute').textContent='';
     if(this.lay)this.lay.clearLayers();
     if(this.pts[0].type!=='start')this.t0=Date.now();
-    const scr=$('#run');scr.classList.toggle('blind',settings.profile==='blind');scr.classList.toggle('low',settings.profile==='low');
-    $('#runTap').firstChild.textContent=settings.profile==='blind'?'🔊 Toucher l\'écran pour répéter':'🔊 Répéter l\'annonce';
     $('#runPause').classList.remove('paused');$('#runPause').innerHTML='⏸ Pause';$('#runMsg').textContent='';
     $('#runValidate').hidden=false;
     show('run');
-    if(settings.profile==='low'){
-      this.initMap();
-      if((settings.showRoute||settings.mapStyle!=='map')&&!Paths.get(course.id))
-        Paths.ensure(course).then(d=>{if(d&&current==='run'&&this.c===course){this.pathsDrawn=false;this.lastRouteT=0;this.redrawMap()}});
-    }
-    simPad($('#runSimPad'),[['⇢ +10 m balise',()=>{const t=this.target(),f=GPS.last;if(t&&f)GPS.simMove(bearing(f,t),Math.min(10,dist(f,t)))}]]);
+    this.applyProfile();
+    simPad($('#runSimPad'),this.simExtra());
     GPS.start();this.unsub=GPS.on(f=>this.onFix(f));
     Wake.on();
     clearInterval(this.tickI);this.tickI=setInterval(()=>this.tick(),1000);
@@ -720,6 +737,18 @@ const Run={map:null,lay:null,
     setTimeout(()=>this.announce(intro+this.guidance()),300);
   },
   target(){return this.pts[this.idx]},
+  simExtra(){return[['⇢ +10 m balise',()=>{const t=this.target(),f=GPS.last;if(t&&f)GPS.simMove(bearing(f,t),Math.min(10,dist(f,t)))}]]},
+  applyProfile(){
+    const scr=$('#run'),low=settings.profile==='low';scr.classList.toggle('blind',!low);scr.classList.toggle('low',low);
+    $('#runTap').firstChild.textContent=low?'🔊 Répéter l\'annonce':'🔊 Toucher l\'écran pour répéter';
+    if(low){this.initMap();this.ensurePaths()}else $('#runRoute').textContent='';
+  },
+  ensurePaths(){
+    const course=this.c;if(!course||settings.profile!=='low'||Paths.get(course.id))return;
+    if(!(settings.showRoute||settings.mapStyle!=='map'))return;
+    if(this._fetching===course.id)return;this._fetching=course.id;
+    Paths.ensure(course).then(d=>{this._fetching=null;if(d&&current==='run'&&this.c===course){this.pathsDrawn=false;this.lastRouteT=0;this.redrawMap()}});
+  },
   elapsed(){if(!this.t0)return 0;const now=this.pausedAt||Date.now();return now-this.t0-this.pausedTotal},
   compute(f){const t=this.target();if(!t||!f)return;this.d=dist(f,t);this.b=bearing(f,t)},
   onFix(f){
@@ -791,7 +820,7 @@ const Run={map:null,lay:null,
     setTimeout(()=>{if(!this.ended)this.announce(msg+this.guidance())},800);
   },
   finish(done){
-    this.ended=true;Lock.disable(true);clearInterval(this.tickI);clearInterval(this.beepI);
+    this.ended=true;Lock.disable(true);RunOpts.hide();clearInterval(this.tickI);clearInterval(this.beepI);
     if(this.pausedAt){this.pausedTotal+=Date.now()-this.pausedAt;this.pausedAt=null}
     const total=this.elapsed();
     if(done){Snd.fanfare();vib([300,100,300,100,600]);this.announce(`Arrivée ! Parcours terminé en ${spokenTime(total)}. Bravo !`)}
@@ -826,7 +855,7 @@ const Run={map:null,lay:null,
   renderDir(){
     if(this.b==null){$('#runDir').textContent='—';$('#runArrowNote').textContent='';return}
     const hd=currentHeading();
-    if(hd){const rel=(this.b-hd.h+360)%360;this.setArrow(rel);$('#runArrowNote').textContent=hd.src==='marche'?'marche ↑':'devant ↑';
+    if(hd){const rel=(this.b-hd.h+360)%360;this.setArrow(rel);$('#runArrowNote').textContent=hd.src==='marche'?'🚶 marche ↑':'🧭 devant ↑';
       $('#runDir').textContent=settings.dirFormat==='clock'?`à ${clockOf(rel)} h · ${cardS(this.b)}`:`${Math.round(this.b)}° ${cardS(this.b)} · ${clockOf(rel)} h`}
     else{this.setArrow(this.b);$('#runArrowNote').textContent='nord ↑';$('#runDir').textContent=`${cardS(this.b)} · ${Math.round(this.b)}°`}
   },
@@ -886,6 +915,12 @@ function holdButton(el,ms,fn){
   el.addEventListener('contextmenu',e=>e.preventDefault());
   el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fn()}});
 }
+const RunOpts={open:false,
+  show(){if(Run.ended||this.open)return;$('#runOptsBody').appendChild($('#settingsBox'));bindSettings();Setup.compassUI();$('#runOptsSheet').hidden=false;this.open=true;setTimeout(()=>$('#runOptsTitle').focus(),50)},
+  hide(){if(!this.open)return;$('#setup main').insertBefore($('#settingsBox'),$('#startRun'));$('#runOptsSheet').hidden=true;this.open=false;Run.render()}
+};
+$('#runOpts').onclick=()=>RunOpts.show();
+$$('.runOptsClose').forEach(b=>b.onclick=()=>RunOpts.hide());
 holdButton($('#runValidate'),1200,()=>{if(!Run.ended)Run.validate('manual')});
 holdButton($('#runSkip'),1200,()=>{if(!Run.ended)Run.validate('skip')});
 holdButton($('#runQuit'),1200,()=>Run.askQuit());
@@ -925,5 +960,5 @@ if(!NATIVE&&'serviceWorker' in navigator&&location.protocol==='https:')navigator
 (async()=>{const dr=store.get(K.draft,null);if(dr&&dr.points&&dr.points.length){
   const v=await modal({title:'Parcours en cours de création',body:`<p>Un brouillon avec ${dr.points.length} point(s) a été retrouvé.</p>`,buttons:[{label:'Reprendre la création',value:true,primary:true},{label:'Plus tard',value:false}]});
   if(v){Create.draft=dr;Create.open()}}})();
-window.OGuide={GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
+window.OGuide={RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
 })();

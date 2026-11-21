@@ -14,6 +14,7 @@
     <div class="row"><button id="hSettings">⚙ Réglages</button><button id="hHelp">❔ Aide</button></div>
     <button id="hInstall" hidden>📲 Installer l'appli sur ce téléphone</button>
     <p class="hint" id="hVersion"></p>
+    <p class="sign">Greg Meyer, STAPS Avignon</p>
   </main>
 </section>
 
@@ -67,6 +68,7 @@
       <h2>Participant</h2>
       <label>Nom (facultatif)<input type="text" id="partName" autocomplete="off" placeholder="ex. Julie"></label>
     </section>
+    <div id="settingsBox">
     <section class="card">
       <h2>Profil</h2>
       <div class="seg" data-s="profile">
@@ -102,9 +104,9 @@
       <h2>Boussole et direction</h2>
       <p id="compassState">…</p>
       <button type="button" id="compassBtn" hidden>🧭 Autoriser la boussole</button>
-      <label>Les heures (12 h = devant) sont calculées d'après
-        <select data-s="headingRef"><option value="phone">le téléphone, tenu devant soi (à plat ou debout)</option><option value="walk">le sens de marche (téléphone en poche ou sur un sac)</option></select></label>
-      <p class="hint">La boussole se règle toute seule, rien à activer. Si la flèche semble fausse : faire quelques « 8 » en l'air avec le téléphone pour la recalibrer, loin des objets métalliques. En mode poche, l'appli utilise automatiquement le sens de marche.</p>
+      <label>Référence de la direction (12 h = devant)
+        <select data-s="headingRef"><option value="auto">Mixte (recommandé) : boussole à l'arrêt, sens de déplacement en marche</option><option value="phone">Boussole du téléphone (tenu devant soi)</option><option value="walk">Sens de déplacement uniquement</option></select></label>
+      <p class="hint"><b>Mixte</b> : quand on marche, la direction suit le sens de déplacement ; à l'arrêt, écran allumé et téléphone tenu à plat, elle suit la boussole ; écran éteint ou téléphone vertical, elle garde le dernier sens de déplacement. La boussole se règle toute seule. Si la flèche semble fausse : faire quelques « 8 » avec le téléphone pour la recalibrer, loin des objets métalliques.</p>
     </section>
     <section class="card">
       <h2>Carte (profil malvoyant)</h2>
@@ -118,7 +120,7 @@
       <label class="chk"><input type="checkbox" data-s="showDone"> Afficher les balises déjà validées</label>
       <p class="hint">Les chemins viennent d'OpenStreetMap : téléchargés une fois avec du réseau, puis gardés pour une utilisation hors connexion.</p>
     </section>
-    <section class="card">
+    <section class="card no-run">
       <h2>Création de parcours</h2>
       <label>Moyenne de la position GPS sur
         <select data-s="avgSeconds" data-num><option value="0">0 s (instantané)</option><option value="5">5 secondes</option><option value="10">10 secondes</option><option value="20">20 secondes</option></select></label>
@@ -128,19 +130,20 @@
       <h2>Test au bureau</h2>
       <label class="chk"><input type="checkbox" data-s="sim"> Mode simulation : la position se déplace avec des flèches ou en touchant la carte</label>
     </section>
+    </div>
     <button class="primary big" id="startRun">▶ Démarrer l'épreuve</button>
   </main>
 </section>
 
 <!-- EPREUVE -->
 <section id="run" class="screen blind">
-  <div class="run-top" id="runTop" aria-hidden="true">
-    <div class="run-line1"><span id="runTarget">—</span><span id="runChrono">0:00</span></div>
-    <div class="run-main">
+  <div class="run-top" id="runTop">
+    <div class="run-line1" aria-hidden="true"><span id="runTarget">—</span><span id="runChrono">0:00</span></div>
+    <div class="run-main" aria-hidden="true">
       <div id="runArrowWrap"><svg id="runArrow" viewBox="0 0 100 100"><polygon points="50,4 84,88 50,68 16,88" fill="#FFD400" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg><span id="runArrowNote"></span></div>
       <div class="run-txt"><div id="runDist">—</div><div id="runDir">—</div><div id="runRoute"></div></div>
     </div>
-    <div class="run-line3"><span id="runGps" class="gps none">GPS…</span><span id="runProg"></span></div>
+    <div class="run-line3"><span id="runGps" class="gps none" aria-hidden="true">GPS…</span><span id="runProg" aria-hidden="true"></span><button type="button" id="runOpts">⚙ Options</button></div>
   </div>
   <div id="runMapWrap"><div id="runMap"></div><button id="runRecenter">⌖ Recentrer</button></div>
   <button id="runTap">🔊 Toucher pour répéter<small id="runMsg"></small></button>
@@ -158,6 +161,12 @@
     <p>Maintenir le doigt 3 secondes pour déverrouiller</p>
   </div>
 </section>
+
+<div id="runOptsSheet" hidden role="dialog" aria-modal="true" aria-labelledby="runOptsTitle">
+  <header class="bar"><h1 id="runOptsTitle" tabindex="-1">Options de l'épreuve</h1><button type="button" class="primary runOptsClose">✔ Fermer</button></header>
+  <main id="runOptsBody"><p class="hint">Les changements s'appliquent tout de suite, le chrono continue.</p></main>
+  <div class="opts-foot"><button type="button" class="primary big runOptsClose">✔ Revenir à l'épreuve</button></div>
+</div>
 
 <!-- RESULTATS -->
 <section id="results" class="screen">
@@ -192,7 +201,8 @@
     <h2>3. Faire l'épreuve</h2>
     <ul>
       <li><b>Non-voyant</b> : distance et direction annoncées toutes les 30 s (réglable). Toucher l'écran répète l'annonce. En zone d'approche, bips de plus en plus rapides et aigus ; un bip plus grave signale que la balise est derrière.</li>
-      <li><b>Malvoyant</b> : chemins et routes en rouge (ou en blanc sur fond noir), balise suivante en grand cercle jaune, itinéraire conseillé en bleu qui suit les chemins, flèche géante et grands chiffres, plus le guidage audio.</li>
+      <li><b>Malvoyant</b> : chemins et routes en rouge (ou en blanc sur fond noir), balise suivante en grand cercle jaune, flèche géante et grands chiffres, plus le guidage audio. Option : itinéraire conseillé en bleu qui suit les chemins.</li>
+      <li><b>⚙ Options</b> pendant l'épreuve : tous les réglages (profil, voix, bips, direction, carte…) se changent sans arrêter le chrono.</li>
       <li>À l'arrivée sur la balise, validation automatique avec un carillon, puis annonce de la suivante. Si le GPS dérive, l'accompagnateur peut <b>Valider</b> (appui long).</li>
       <li>Le chrono démarre à la validation du départ. Les temps intermédiaires et la trace sont exportables à la fin.</li>
     </ul>

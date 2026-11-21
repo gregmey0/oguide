@@ -130,3 +130,11 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
 #runRoute{color:#8fbaff;font-size:clamp(.85rem,4.2vw,1rem);font-weight:700;line-height:1.2}
 #runRoute:empty{display:none}
 .run-line3 .gps{white-space:nowrap}
+#runOpts{min-height:44px;padding:0 .7rem;font-size:.95rem;border-width:2px;border-radius:10px}
+#runOptsSheet{position:fixed;inset:0;z-index:3500;background:#000;overflow:auto;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#runOptsSheet[hidden]{display:none!important}
+#runOptsSheet header.bar button{min-height:48px}
+#runOptsSheet .no-run{display:none}
+#settingsBox{display:flex;flex-direction:column;gap:.85rem}
+.opts-foot{padding:0 1rem 1rem}
+.sign{text-align:center;color:var(--acc);font-size:1rem;font-weight:700;margin-top:1rem;letter-spacing:.02em}
