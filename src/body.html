@@ -1,0 +1,216 @@
+<div id="simBanner" class="simbanner" hidden>MODE SIMULATION – la position ne vient pas du GPS</div>
+
+<!-- ACCUEIL -->
+<section id="home" class="screen active">
+  <main class="home">
+    <div class="brand">
+      <svg width="76" height="76" viewBox="0 0 100 100" aria-hidden="true"><rect x="10" y="10" width="80" height="80" rx="6" fill="#fff"/><polygon points="10,10 90,10 90,90" fill="#FF7A00"/><rect x="10" y="10" width="80" height="80" rx="6" fill="none" stroke="#FFD400" stroke-width="6"/></svg>
+      <div><h1 tabindex="-1">O'Guide</h1><p>Course d'orientation accessible</p></div>
+    </div>
+    <div id="homeWarn"></div>
+    <button class="primary big" id="hCreate">➕ Créer un parcours</button>
+    <button class="big" id="hLib">📚 Mes parcours&nbsp;<span id="hCount"></span></button>
+    <button class="big" id="hImport">📂 Importer un GPX</button>
+    <div class="row"><button id="hSettings">⚙ Réglages</button><button id="hHelp">❔ Aide</button></div>
+    <button id="hInstall" hidden>📲 Installer l'appli sur ce téléphone</button>
+    <p class="hint" id="hVersion"></p>
+  </main>
+</section>
+
+<!-- CREATION -->
+<section id="create" class="screen">
+  <header class="bar"><button class="back" id="crBack" aria-label="Retour">←</button><h1 tabindex="-1">Créer un parcours</h1></header>
+  <div class="status"><span id="crGps" class="gps none">GPS : recherche…</span><span id="crCount">0 point</span></div>
+  <div id="createMap" class="map"></div>
+  <div class="simpad" id="crSimPad"></div>
+  <main>
+    <button class="primary big" id="crMain">📍 Enregistrer le DÉPART</button>
+    <div class="row"><button id="crFinishHere">🏁 Arrivée ici</button><button id="crFinishStart">🏁 Arrivée = départ</button></div>
+    <div class="row"><button id="crUndo">↶ Annuler le dernier point</button><button class="ok" id="crDone">✔ Terminer</button></div>
+    <p class="hint" id="crHint"></p>
+    <ol id="crList" class="plist"></ol>
+  </main>
+</section>
+
+<!-- BIBLIOTHEQUE -->
+<section id="library" class="screen">
+  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1">Mes parcours</h1></header>
+  <main>
+    <button id="libImport">📂 Importer un GPX</button>
+    <ul id="libList" class="cards"></ul>
+  </main>
+</section>
+
+<!-- DETAIL PARCOURS -->
+<section id="detail" class="screen">
+  <header class="bar"><button class="back" data-go="library" aria-label="Retour">←</button><h1 tabindex="-1" id="dtTitle">Parcours</h1></header>
+  <div id="detailMap" class="map"></div>
+  <main>
+    <button class="primary big" id="dtRun">▶ Faire ce parcours</button>
+    <div class="row"><button id="dtShare">📤 Partager le GPX</button><button id="dtDownload">⬇ Télécharger le GPX</button></div>
+    <div class="row"><button id="dtEdit">✋ Corriger les positions</button><button id="dtRename">✏ Renommer</button></div>
+    <p class="hint" id="dtEditHint" hidden>Fais glisser une balise sur la carte pour corriger sa position. Appuie à nouveau sur le bouton pour terminer.</p>
+    <div id="dtSummary" class="card"></div>
+    <ol id="dtList" class="plist"></ol>
+    <div id="dtResults"></div>
+    <button class="danger" id="dtDelete">🗑 Supprimer ce parcours</button>
+  </main>
+</section>
+
+<!-- PREPARATION / REGLAGES -->
+<section id="setup" class="screen">
+  <header class="bar"><button class="back" id="suBack" aria-label="Retour">←</button><h1 tabindex="-1" id="suTitle">Préparer l'épreuve</h1></header>
+  <main>
+    <div id="suCourse" class="card"></div>
+    <section class="card" id="suPartCard">
+      <h2>Participant</h2>
+      <label>Nom (facultatif)<input type="text" id="partName" autocomplete="off" placeholder="ex. Julie"></label>
+    </section>
+    <section class="card">
+      <h2>Profil</h2>
+      <div class="seg" data-s="profile">
+        <button type="button" data-v="blind" aria-pressed="false">👂 Non-voyant<small>audio seul, écran géant</small></button>
+        <button type="button" data-v="low" aria-pressed="false">👁 Malvoyant<small>carte contrastée + audio</small></button>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Guidage vocal</h2>
+      <label>Voix
+        <select data-s="voiceMode"><option value="app">Voix de l'appli</option><option value="sr">Lecteur d'écran (TalkBack / VoiceOver)</option><option value="off">Aucune</option></select></label>
+      <label>Annonce automatique toutes les
+        <select data-s="interval" data-num><option value="15">15 secondes</option><option value="20">20 secondes</option><option value="30">30 secondes</option><option value="45">45 secondes</option><option value="60">60 secondes</option></select></label>
+      <label>Direction annoncée
+        <select data-s="dirFormat"><option value="azimut">Azimut en degrés + point cardinal</option><option value="clock">Direction horaire (12 h = devant), via la boussole du téléphone</option></select></label>
+      <label>Débit de la voix <input type="range" min="0.7" max="1.5" step="0.1" data-s="rate" data-num></label>
+      <button type="button" id="testVoice">🔊 Tester la voix</button>
+    </section>
+    <section class="card">
+      <h2>Approche et validation</h2>
+      <label class="chk"><input type="checkbox" data-s="beep"> Signal sonore d'approche (bips de plus en plus rapides et aigus)</label>
+      <label>Le signal démarre à
+        <select data-s="approachDist" data-num><option value="20">20 m de la balise</option><option value="30">30 m de la balise</option><option value="50">50 m de la balise</option><option value="80">80 m de la balise</option></select></label>
+      <label>Dans la zone d'approche, annonce vocale toutes les
+        <select data-s="zoneInterval" data-num><option value="10">10 secondes</option><option value="15">15 secondes</option><option value="20">20 secondes</option><option value="30">30 secondes</option></select></label>
+      <label class="chk"><input type="checkbox" data-s="stereo"> Bip à gauche / à droite selon la direction (casque + boussole)</label>
+      <label>Validation automatique dans un rayon de
+        <select data-s="radius" data-num><option value="5">5 m</option><option value="8">8 m</option><option value="10">10 m</option><option value="15">15 m</option><option value="20">20 m</option></select></label>
+      <label class="chk"><input type="checkbox" data-s="vibrate"> Vibrations</label>
+      <button type="button" id="testBeep">🔔 Tester le signal d'approche</button>
+    </section>
+    <section class="card">
+      <h2>Boussole</h2>
+      <p id="compassState">Inactive</p>
+      <button type="button" id="compassBtn">🧭 Activer la boussole</button>
+      <p class="hint">Sert à la direction horaire, au son gauche/droite et à la flèche. Tenir le téléphone à plat, haut du téléphone devant soi.</p>
+    </section>
+    <section class="card">
+      <h2>Carte (profil malvoyant et création)</h2>
+      <label>Fond de carte
+        <select data-s="layer"><option value="osm">OpenStreetMap</option><option value="ign">Plan IGN</option><option value="topo">OpenTopoMap (relief)</option><option value="photo">Photo aérienne IGN</option></select></label>
+      <label>Contraste
+        <select data-s="contrast"><option value="normal">Normal (couleurs)</option><option value="high">Fort (noir et blanc)</option><option value="invert">Inversé (fond noir)</option></select></label>
+      <label class="chk"><input type="checkbox" data-s="showDone"> Afficher les balises déjà validées</label>
+    </section>
+    <section class="card">
+      <h2>Création de parcours</h2>
+      <label>Moyenne de la position GPS sur
+        <select data-s="avgSeconds" data-num><option value="0">0 s (instantané)</option><option value="5">5 secondes</option><option value="10">10 secondes</option><option value="20">20 secondes</option></select></label>
+      <label class="chk"><input type="checkbox" data-s="recordTrack"> Enregistrer aussi la trace du créateur</label>
+    </section>
+    <section class="card">
+      <h2>Test au bureau</h2>
+      <label class="chk"><input type="checkbox" data-s="sim"> Mode simulation : la position se déplace avec des flèches ou en touchant la carte</label>
+    </section>
+    <button class="primary big" id="startRun">▶ Démarrer l'épreuve</button>
+  </main>
+</section>
+
+<!-- EPREUVE -->
+<section id="run" class="screen blind">
+  <div class="run-top" id="runTop" aria-hidden="true">
+    <div class="run-line1"><span id="runTarget">—</span><span id="runChrono">0:00</span></div>
+    <div class="run-main">
+      <div id="runArrowWrap"><svg id="runArrow" viewBox="0 0 100 100"><polygon points="50,4 84,88 50,68 16,88" fill="#FFD400" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg><span id="runArrowNote"></span></div>
+      <div><div id="runDist">—</div><div id="runDir">—</div></div>
+    </div>
+    <div class="run-line3"><span id="runGps" class="gps none">GPS…</span><span id="runProg"></span></div>
+  </div>
+  <div id="runMapWrap"><div id="runMap"></div><button id="runRecenter">⌖ Recentrer</button></div>
+  <button id="runTap">🔊 Toucher pour répéter<small id="runMsg"></small></button>
+  <div class="simpad" id="runSimPad"></div>
+  <div class="run-bar">
+    <button id="runPause">⏸ Pause</button>
+    <button class="hold" id="runValidate">✔ Valider<small>appui long</small></button>
+    <button class="hold" id="runSkip">⏭ Passer<small>appui long</small></button>
+    <button id="runLock">🔒 Poche<small>verrouiller</small></button>
+    <button class="hold danger" id="runQuit">✖ Arrêter<small>appui long</small></button>
+  </div>
+  <div id="lock" hidden role="button" aria-label="Écran verrouillé. Maintenir trois secondes pour déverrouiller.">
+    <p>🔒 Mode poche – le guidage continue</p>
+    <div class="bar"></div>
+    <p>Maintenir le doigt 3 secondes pour déverrouiller</p>
+  </div>
+</section>
+
+<!-- RESULTATS -->
+<section id="results" class="screen">
+  <header class="bar"><button class="back" data-go="home" aria-label="Retour à l'accueil">←</button><h1 tabindex="-1">Résultats</h1></header>
+  <main>
+    <div id="rsHead"></div>
+    <div class="bigtime" id="rsTotal"></div>
+    <table class="res" id="rsTable"></table>
+    <div class="row"><button id="rsShare">📤 Partager (GPX)</button><button id="rsDownload">⬇ Télécharger (GPX)</button></div>
+    <button id="rsCopy">📋 Copier le résumé</button>
+    <button class="primary" data-go="home">Accueil</button>
+  </main>
+</section>
+
+<!-- AIDE -->
+<section id="help" class="screen">
+  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1">Aide</h1></header>
+  <main class="help">
+    <h2>1. Créer un parcours</h2>
+    <ul>
+      <li>Va au départ, attends que le GPS soit vert (précision ≤ 8 m), appuie sur <b>Enregistrer le DÉPART</b> et reste immobile pendant la mesure.</li>
+      <li>Marche jusqu'à chaque balise et appuie sur <b>Enregistrer la BALISE n</b> une fois dessus.</li>
+      <li>Termine avec <b>Arrivée ici</b> ou <b>Arrivée = départ</b>, puis <b>Terminer</b>. Tu peux ajouter un indice à chaque balise (« au pied du grand chêne ») : il sera lu à l'approche.</li>
+      <li>Le brouillon est sauvegardé à chaque point : si le téléphone se met en veille, tu reprends où tu en étais.</li>
+    </ul>
+    <h2>2. Partager</h2>
+    <ul>
+      <li>Dans <b>Mes parcours</b>, ouvre le parcours : <b>Partager le GPX</b> ou <b>Télécharger le GPX</b>. Le fichier contient départ, balises, arrivée (et la trace si activée).</li>
+      <li>La personne qui le reçoit l'ouvre avec <b>Importer un GPX</b>. Les GPX d'autres applis (points « wpt » ou route « rte ») sont aussi acceptés.</li>
+      <li>Une erreur de position ? <b>Corriger les positions</b> permet de déplacer une balise sur la carte.</li>
+    </ul>
+    <h2>3. Faire l'épreuve</h2>
+    <ul>
+      <li><b>Non-voyant</b> : distance et direction annoncées toutes les 30 s (réglable). Toucher l'écran répète l'annonce. En zone d'approche, bips de plus en plus rapides et aigus ; un bip plus grave signale que la balise est derrière.</li>
+      <li><b>Malvoyant</b> : carte très contrastée avec seulement la balise suivante, flèche géante et grands chiffres, plus le guidage audio.</li>
+      <li>À l'arrivée sur la balise, validation automatique avec un carillon, puis annonce de la suivante. Si le GPS dérive, l'accompagnateur peut <b>Valider</b> (appui long).</li>
+      <li>Le chrono démarre à la validation du départ. Les temps intermédiaires et la trace sont exportables à la fin.</li>
+    </ul>
+    <h2>Conseils terrain</h2>
+    <ul>
+      <li class="web-only">Garde l'écran allumé et l'appli au premier plan : un navigateur coupe le GPS quand l'écran est verrouillé. L'appli demande au téléphone de rester allumé.</li>
+      <li class="native-only">Le guidage continue téléphone verrouillé (bouton marche/arrêt) : GPS, voix et validations tournent en arrière-plan, une notification « O'Guide – GPS actif » le signale. Au premier lancement, accepte la localisation « précise » et les notifications.</li>
+      <li><b>Mode poche</b> (bouton 🔒 pendant l'épreuve) : l'écran devient noir et ignore les appuis, le guidage continue. Maintenir le doigt 3 secondes pour déverrouiller.</li>
+      <li>Préfère un casque à conduction osseuse : il laisse entendre l'environnement.</li>
+      <li>Précision GPS typique : 3 à 8 m à découvert, davantage sous les arbres ou près des bâtiments. Un rayon de 10 m est un bon compromis.</li>
+      <li>Teste chez toi avec le <b>mode simulation</b> (Réglages).</li>
+      <li>Fonds de carte : ils nécessitent du réseau. Le guidage audio fonctionne sans réseau.</li>
+      <li class="native-only">Fichiers GPX : « Partager » ouvre WhatsApp, mail, Drive… ; « Enregistrer » les range dans Documents › OGuide.</li>
+    </ul>
+  </main>
+</section>
+
+<div id="toast" role="status"></div>
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="box">
+    <h2 id="modalTitle" tabindex="-1"></h2>
+    <div id="modalBody"></div>
+    <input type="text" id="modalInput" autocomplete="off">
+    <div id="modalBtns"></div>
+  </div>
+</div>
+<div id="live" class="sr" aria-live="assertive" aria-atomic="true"></div>
+<input type="file" id="gpxInput" multiple hidden>

@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">O\'Guide</string>
+    <string name="title_activity_main">O\'Guide</string>
+    <string name="package_name">org.oguide.app</string>
+    <string name="custom_url_scheme">org.oguide.app</string>
+    <string name="capacitor_background_geolocation_notification_channel_name">Guidage GPS</string>
+    <string name="capacitor_background_geolocation_notification_icon">drawable/ic_stat_oguide</string>
+    <string name="capacitor_background_geolocation_notification_color">#FFD400</string>
+</resources>
