@@ -1,6 +1,6 @@
 'use strict';
 (function(){
-const VERSION='1.3.1';
+const VERSION='1.4.0';
 const CAP=window.capacitorExports||null;
 const NATIVE=!!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform());
 const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications')}:{};
@@ -19,7 +19,7 @@ const store={
   del(k){try{localStorage.removeItem(k)}catch(e){}}
 };
 const K={courses:'oguide.courses.v1',settings:'oguide.settings.v1',draft:'oguide.draft.v1',results:'oguide.results.v1'};
-const DEFAULTS={profile:'blind',voiceMode:'app',interval:30,zoneInterval:15,dirFormat:'clock',headingRef:'auto',rate:1,beep:true,approachDist:50,stereo:false,radius:10,vibrate:true,layer:'ign',contrast:'high',mapStyle:'paths-light',showRoute:false,showDone:false,avgSeconds:5,recordTrack:true,sim:false,_v:3};
+const DEFAULTS={profile:'blind',voiceMode:'app',interval:30,zoneInterval:15,dirFormat:'clock',headingRef:'auto',rate:1,beep:true,approachDist:50,stereo:false,radius:10,vibrate:true,layer:'ign',contrast:'high',mapStyle:'paths-light',showRoute:false,showMe:true,showDone:false,avgSeconds:5,recordTrack:true,sim:false,_v:3};
 let settings=Object.assign({},DEFAULTS,store.get(K.settings,{}));
 const saveSettings=()=>store.set(K.settings,settings);
 if((settings._v||1)<2)Object.assign(settings,{approachDist:50,dirFormat:'clock',mapStyle:'paths-light',_v:2});
@@ -701,6 +701,7 @@ function onSetting(k){
   if(k==='profile')Run.applyProfile();
   if(k==='showRoute'){Run.route=null;Run.lastRouteT=0;Run.ensurePaths();Run.updateMap();if(!settings.showRoute)$('#runRoute').textContent=''}
   if(k==='radius'||k==='showDone')Run.redrawMap();
+  if(k==='showMe'){Run.redrawMap();Run.fit(true)}
   if(k==='voiceMode'&&settings.voiceMode!=='app')Voice.stop();
   if(k==='dirFormat'||k==='headingRef')Run.renderDir();
 }
@@ -877,6 +878,9 @@ const Run={map:null,lay:null,
     if(!this.pathsDrawn){drawPaths(this.pathLay,Paths.get(this.c.id),mapStyleOf(this.map));this.pathsDrawn=true}
     if(settings.showDone)this.pts.slice(0,this.idx).forEach((p,i)=>L.marker([p.lat,p.lon],{icon:ctrlIcon(this.pts,i,{size:30,cls:'done'}),interactive:false}).addTo(this.lay));
     const t=this.target();if(!t)return;
+    if(!settings.showMe&&this.idx>0){const pv=this.pts[this.idx-1];
+      L.polyline([[pv.lat,pv.lon],[t.lat,t.lon]],{color:'#FF2BD6',weight:5,opacity:.9,interactive:false}).addTo(this.lay);
+      L.marker([pv.lat,pv.lon],{icon:ctrlIcon(this.pts,this.idx-1,{size:34}),interactive:false}).addTo(this.lay)}
     L.circle([t.lat,t.lon],{radius:settings.radius,color:'#000',weight:3,fillColor:'#FFD400',fillOpacity:.25,interactive:false}).addTo(this.lay);
     this.line=L.polyline([],{color:'#FF2BD6',weight:7,dashArray:'1 14',lineCap:'round',interactive:false}).addTo(this.lay);
     const rs=PATH_STYLE[mapStyleOf(this.map)]||PATH_STYLE.map;
@@ -888,6 +892,11 @@ const Run={map:null,lay:null,
   updateMap(){
     if(!this.map||settings.profile!=='low')return;
     const f=GPS.last,t=this.target();if(!f||!t)return;
+    if(!settings.showMe){ /* comme en vraie course d'orientation : ni position, ni trait, ni itinéraire, carte fixe */
+      if(this.meM){this.lay.removeLayer(this.meM);this.lay.removeLayer(this.accC);this.meM=null;this.accC=null}
+      if(this.line)this.line.setLatLngs([]);if(this.routeLine){this.routeCase.setLatLngs([]);this.routeLine.setLatLngs([])}
+      this.route=null;$('#runRoute').textContent='';return;
+    }
     const ll=[f.lat,f.lon],hd=currentHeading();
     if(!this.meM){this.accC=L.circle(ll,{radius:f.acc,color:'#00B8D4',weight:2,fillOpacity:.1,interactive:false}).addTo(this.lay);this.meM=L.marker(ll,{icon:meIcon(hd?hd.h:null),interactive:false,zIndexOffset:2000}).addTo(this.lay)}
     else{this.meM.setLatLng(ll);this.meM.setIcon(meIcon(hd?hd.h:null));this.accC.setLatLng(ll).setRadius(f.acc)}
@@ -902,6 +911,9 @@ const Run={map:null,lay:null,
   fit(force){
     if(!this.map||settings.profile!=='low')return;
     const f=GPS.last,t=this.target();if(!t)return;this.lastFit=Date.now();
+    if(!settings.showMe){const pv=this.idx>0?this.pts[this.idx-1]:null;
+      if(pv&&dist(pv,t)>5)this.map.fitBounds(L.latLngBounds([[pv.lat,pv.lon],[t.lat,t.lon]]),{padding:[70,70],maxZoom:18,animate:!force});
+      else this.map.setView([t.lat,t.lon],17,{animate:!force});return}
     if(!f){this.map.setView([t.lat,t.lon],17);return}
     const pts=[[f.lat,f.lon],[t.lat,t.lon]].concat(this.route?this.route.coords:[]);
     this.map.fitBounds(L.latLngBounds(pts),{padding:[50,50],maxZoom:19,animate:!force});

@@ -117,6 +117,7 @@
         <select data-s="layer"><option value="osm">OpenStreetMap</option><option value="ign">Plan IGN</option><option value="topo">OpenTopoMap (relief)</option><option value="photo">Photo aérienne IGN</option></select></label>
       <label>Contraste de la carte complète
         <select data-s="contrast"><option value="normal">Normal (couleurs)</option><option value="high">Fort (noir et blanc)</option><option value="invert">Inversé (fond noir)</option></select></label>
+      <label class="chk"><input type="checkbox" data-s="showMe"> Afficher ma position sur la carte (décocher pour une vraie course d'orientation : carte fixe, seules la balise précédente et la balise à trouver apparaissent, sans itinéraire)</label>
       <label class="chk"><input type="checkbox" data-s="showDone"> Afficher les balises déjà validées</label>
       <p class="hint">Les chemins viennent d'OpenStreetMap : téléchargés une fois avec du réseau, puis gardés pour une utilisation hors connexion.</p>
     </section>
@@ -201,7 +202,7 @@
     <h2>3. Faire l'épreuve</h2>
     <ul>
       <li><b>Non-voyant</b> : distance et direction annoncées toutes les 30 s (réglable). Toucher l'écran répète l'annonce. En zone d'approche, bips de plus en plus rapides et aigus ; un bip plus grave signale que la balise est derrière.</li>
-      <li><b>Malvoyant</b> : chemins et routes en rouge (ou en blanc sur fond noir), balise suivante en grand cercle jaune, flèche géante et grands chiffres, plus le guidage audio. Option : itinéraire conseillé en bleu qui suit les chemins.</li>
+      <li><b>Malvoyant</b> : chemins et routes en rouge (ou en blanc sur fond noir), balise suivante en grand cercle jaune, flèche géante et grands chiffres, plus le guidage audio. Option : itinéraire conseillé en bleu qui suit les chemins. Option « vraie course d'orientation » : la position du téléphone n'apparaît pas, la carte montre seulement le trajet de la balise précédente à la suivante.</li>
       <li><b>⚙ Options</b> pendant l'épreuve : tous les réglages (profil, voix, bips, direction, carte…) se changent sans arrêter le chrono.</li>
       <li>À l'arrivée sur la balise, validation automatique avec un carillon, puis annonce de la suivante. Si le GPS dérive, l'accompagnateur peut <b>Valider</b> (appui long).</li>
       <li>Le chrono démarre à la validation du départ. Les temps intermédiaires et la trace sont exportables à la fin.</li>
