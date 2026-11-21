@@ -51,6 +51,7 @@
     <div class="row"><button id="dtEdit">✋ Corriger les positions</button><button id="dtRename">✏ Renommer</button></div>
     <p class="hint" id="dtEditHint" hidden>Fais glisser une balise sur la carte pour corriger sa position. Appuie à nouveau sur le bouton pour terminer.</p>
     <div id="dtSummary" class="card"></div>
+    <div class="card"><p id="dtPaths"></p><button type="button" id="dtPathsBtn">🗺 Télécharger les chemins</button></div>
     <ol id="dtList" class="plist"></ol>
     <div id="dtResults"></div>
     <button class="danger" id="dtDelete">🗑 Supprimer ce parcours</button>
@@ -80,7 +81,7 @@
       <label>Annonce automatique toutes les
         <select data-s="interval" data-num><option value="15">15 secondes</option><option value="20">20 secondes</option><option value="30">30 secondes</option><option value="45">45 secondes</option><option value="60">60 secondes</option></select></label>
       <label>Direction annoncée
-        <select data-s="dirFormat"><option value="azimut">Azimut en degrés + point cardinal</option><option value="clock">Direction horaire (12 h = devant), via la boussole du téléphone</option></select></label>
+        <select data-s="dirFormat"><option value="clock">En heures (12 h = devant, 3 h = à droite)</option><option value="azimut">Azimut en degrés + point cardinal</option></select></label>
       <label>Débit de la voix <input type="range" min="0.7" max="1.5" step="0.1" data-s="rate" data-num></label>
       <button type="button" id="testVoice">🔊 Tester la voix</button>
     </section>
@@ -98,18 +99,24 @@
       <button type="button" id="testBeep">🔔 Tester le signal d'approche</button>
     </section>
     <section class="card">
-      <h2>Boussole</h2>
-      <p id="compassState">Inactive</p>
-      <button type="button" id="compassBtn">🧭 Activer la boussole</button>
-      <p class="hint">Sert à la direction horaire, au son gauche/droite et à la flèche. Tenir le téléphone à plat, haut du téléphone devant soi.</p>
+      <h2>Boussole et direction</h2>
+      <p id="compassState">…</p>
+      <button type="button" id="compassBtn" hidden>🧭 Autoriser la boussole</button>
+      <label>Les heures (12 h = devant) sont calculées d'après
+        <select data-s="headingRef"><option value="phone">le téléphone, tenu devant soi (à plat ou debout)</option><option value="walk">le sens de marche (téléphone en poche ou sur un sac)</option></select></label>
+      <p class="hint">La boussole se règle toute seule, rien à activer. Si la flèche semble fausse : faire quelques « 8 » en l'air avec le téléphone pour la recalibrer, loin des objets métalliques. En mode poche, l'appli utilise automatiquement le sens de marche.</p>
     </section>
     <section class="card">
-      <h2>Carte (profil malvoyant et création)</h2>
-      <label>Fond de carte
+      <h2>Carte (profil malvoyant)</h2>
+      <label>Présentation
+        <select data-s="mapStyle"><option value="paths-light">Chemins et routes en rouge sur fond clair</option><option value="paths-dark">Chemins et routes en blanc sur fond noir (sans carte)</option><option value="map">Carte complète</option></select></label>
+      <label class="chk"><input type="checkbox" data-s="showRoute"> Tracer l'itinéraire conseillé en suivant les chemins</label>
+      <label>Fond de carte (pour le fond clair et la carte complète)
         <select data-s="layer"><option value="osm">OpenStreetMap</option><option value="ign">Plan IGN</option><option value="topo">OpenTopoMap (relief)</option><option value="photo">Photo aérienne IGN</option></select></label>
-      <label>Contraste
+      <label>Contraste de la carte complète
         <select data-s="contrast"><option value="normal">Normal (couleurs)</option><option value="high">Fort (noir et blanc)</option><option value="invert">Inversé (fond noir)</option></select></label>
       <label class="chk"><input type="checkbox" data-s="showDone"> Afficher les balises déjà validées</label>
+      <p class="hint">Les chemins viennent d'OpenStreetMap : téléchargés une fois avec du réseau, puis gardés pour une utilisation hors connexion.</p>
     </section>
     <section class="card">
       <h2>Création de parcours</h2>
@@ -131,7 +138,7 @@
     <div class="run-line1"><span id="runTarget">—</span><span id="runChrono">0:00</span></div>
     <div class="run-main">
       <div id="runArrowWrap"><svg id="runArrow" viewBox="0 0 100 100"><polygon points="50,4 84,88 50,68 16,88" fill="#FFD400" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg><span id="runArrowNote"></span></div>
-      <div><div id="runDist">—</div><div id="runDir">—</div></div>
+      <div class="run-txt"><div id="runDist">—</div><div id="runDir">—</div><div id="runRoute"></div></div>
     </div>
     <div class="run-line3"><span id="runGps" class="gps none">GPS…</span><span id="runProg"></span></div>
   </div>
@@ -185,7 +192,7 @@
     <h2>3. Faire l'épreuve</h2>
     <ul>
       <li><b>Non-voyant</b> : distance et direction annoncées toutes les 30 s (réglable). Toucher l'écran répète l'annonce. En zone d'approche, bips de plus en plus rapides et aigus ; un bip plus grave signale que la balise est derrière.</li>
-      <li><b>Malvoyant</b> : carte très contrastée avec seulement la balise suivante, flèche géante et grands chiffres, plus le guidage audio.</li>
+      <li><b>Malvoyant</b> : chemins et routes en rouge (ou en blanc sur fond noir), balise suivante en grand cercle jaune, itinéraire conseillé en bleu qui suit les chemins, flèche géante et grands chiffres, plus le guidage audio.</li>
       <li>À l'arrivée sur la balise, validation automatique avec un carillon, puis annonce de la suivante. Si le GPS dérive, l'accompagnateur peut <b>Valider</b> (appui long).</li>
       <li>Le chrono démarre à la validation du départ. Les temps intermédiaires et la trace sont exportables à la fin.</li>
     </ul>
@@ -194,6 +201,7 @@
       <li class="web-only">Garde l'écran allumé et l'appli au premier plan : un navigateur coupe le GPS quand l'écran est verrouillé. L'appli demande au téléphone de rester allumé.</li>
       <li class="native-only">Le guidage continue téléphone verrouillé (bouton marche/arrêt) : GPS, voix et validations tournent en arrière-plan, une notification « O'Guide – GPS actif » le signale. Au premier lancement, accepte la localisation « précise » et les notifications.</li>
       <li><b>Mode poche</b> (bouton 🔒 pendant l'épreuve) : l'écran devient noir et ignore les appuis, le guidage continue. Maintenir le doigt 3 secondes pour déverrouiller.</li>
+      <li>Flèche ou heures qui semblent fausses : faire quelques « 8 » avec le téléphone pour recalibrer la boussole, et le tenir loin des objets métalliques.</li>
       <li>Préfère un casque à conduction osseuse : il laisse entendre l'environnement.</li>
       <li>Précision GPS typique : 3 à 8 m à découvert, davantage sous les arbres ou près des bâtiments. Un rayon de 10 m est un bon compromis.</li>
       <li>Teste chez toi avec le <b>mode simulation</b> (Réglages).</li>

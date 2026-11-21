@@ -86,8 +86,9 @@ table.res td.num,table.res th.num{text-align:right;font-variant-numeric:tabular-
 #runArrowWrap{flex:none;width:118px;height:118px;border-radius:50%;border:4px solid #fff;display:flex;align-items:center;justify-content:center;position:relative}
 #runArrow{width:100px;height:100px;transition:transform .25s linear}
 #runArrowNote{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);font-size:.65rem;background:#000;padding:0 .3rem;white-space:nowrap}
-#runDist{font-size:4.4rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
-#runDir{font-size:1.7rem;font-weight:700;color:var(--acc)}
+.run-txt{min-width:0;flex:1}
+#runDist{font-size:clamp(2.4rem,14vw,4.4rem);font-weight:700;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
+#runDir{font-size:clamp(1.3rem,7vw,1.7rem);font-weight:700;color:var(--acc);white-space:nowrap}
 #runProg{font-size:1rem}
 #runMapWrap{flex:1;position:relative;min-height:0;isolation:isolate;z-index:0}
 #runMap{position:absolute;inset:0}
@@ -122,3 +123,10 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
 #lock[hidden]{display:none!important}
 #lock .bar{width:70%;height:14px;border:2px solid #444;border-radius:8px;background:linear-gradient(to right,#9a9a9a var(--p,0%),transparent var(--p,0%))}
 .native .web-only,.web .native-only{display:none}
+.ms-light .leaflet-tile-pane{filter:grayscale(1) contrast(.8) brightness(1.15);opacity:.5}
+.ms-light.leaflet-container{background:#fff}
+.ms-dark.leaflet-container{background:#000}
+.ms-dark .leaflet-control-attribution{background:rgba(0,0,0,.7);color:#bbb}
+#runRoute{color:#8fbaff;font-size:1rem;font-weight:700;white-space:nowrap}
+#runRoute:empty{display:none}
+.run-line3 .gps{white-space:nowrap}
