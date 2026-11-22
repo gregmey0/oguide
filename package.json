@@ -1,6 +1,6 @@
 {
   "name": "oguide",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "private": true,
   "description": "O'Guide – course d'orientation accessible (application Android)",
   "scripts": {

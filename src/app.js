@@ -1,6 +1,6 @@
 'use strict';
 (function(){
-const VERSION='1.5.1';
+const VERSION='1.6.0';
 const CAP=window.capacitorExports||null;
 const NATIVE=!!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform());
 const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications'),app:CAP.registerPlugin('App')}:{};
@@ -669,6 +669,7 @@ const Lib={map:null,lay:null,cur:null,editing:false,
 $('#libList').addEventListener('click',e=>{const g=e.target.closest('[data-org]');if(g){const c=courses.find(x=>x.id===g.dataset.org);if(c){Lib.cur=c;OrgSetup.open(c)}return}const o=e.target.closest('[data-open]');if(o){if(Lib.forOrg){const c=courses.find(x=>x.id===o.dataset.open);if(c){Lib.cur=c;OrgSetup.open(c)}return}Lib.openDetail(o.dataset.open);return}const r=e.target.closest('[data-run]');if(r)Setup.open(r.dataset.run)});
 $('#dtRun').onclick=()=>Setup.open(Lib.cur.id);
 $('#dtOrg').onclick=()=>OrgSetup.open(Lib.cur);
+$('#dtPrint').onclick=()=>PrintMap.open(Lib.cur);
 $('#dtShare').onclick=()=>shareFile(slug(Lib.cur.name)+'.gpx',courseToGPX(Lib.cur));
 $('#dtDownload').onclick=()=>saveFile(slug(Lib.cur.name)+'.gpx',courseToGPX(Lib.cur));
 $('#dtPathsBtn').onclick=async()=>{const c=Lib.cur,b=$('#dtPathsBtn');b.disabled=true;b.textContent='⏳ Téléchargement…';
@@ -1063,5 +1064,5 @@ if(NATIVE&&P.app){try{P.app.addListener('appUrlOpen',e=>{const c=linkCode(e&&e.u
   const dr=store.get(K.draft,null);if(dr&&dr.points&&dr.points.length){
   const v=await modal({title:'Parcours en cours de création',body:`<p>Un brouillon avec ${dr.points.length} point(s) a été retrouvé.</p>`,buttons:[{label:'Reprendre la création',value:true,primary:true},{label:'Plus tard',value:false}]});
   if(v){Create.draft=dr;Create.open()}}})();
-window.OGuide={Org,OrgSetup,TrainSetup,Follow,Join,Replay,RaceLink,store,K,trackDist,appIntent,RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
+window.OGuide={PrintMap,Org,OrgSetup,TrainSetup,Follow,Join,Replay,RaceLink,store,K,trackDist,appIntent,RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
 })();

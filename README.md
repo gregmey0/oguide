@@ -6,6 +6,7 @@ Application de course d'orientation pour personnes **non-voyantes et malvoyantes
 - **Guidage** : distance et azimut (ou direction horaire) annoncés à intervalle régulier, bips d'approche qui accélèrent, validation automatique de la balise, carte très contrastée pour les malvoyants.
 - **Mode poche** : écran tactile verrouillé, le guidage continue.
 - **Partage** des parcours et des résultats en **GPX** (import / export).
+- **Impression** : carte du parcours en A4 (PDF ou image PNG), grands symboles contrastés, balises et indices, et style « chemins seuls, noir sur blanc » pour papier thermogonflé (carte en relief).
 - **Courses organisées** : l'organisateur crée une course (code + QR code), donne le départ groupé ou laisse partir chacun, suit tous les coureurs sur la carte en direct (balises, temps, batterie, alertes), puis classement, CSV, traces GPX et replay. Chaque coureur garde son guidage O'Guide.
 - **Suivi en pratique libre** : l'encadrant crée une séance sans parcours ; les pratiquants rejoignent et rangent leur téléphone, il les suit en direct puis en replay (distance, vitesse, bilan CSV, traces GPX).
 - **Compatible Shadow CO** : même relais chiffré, des coureurs voyants (Shadow CO) et non-voyants ou malvoyants (O'Guide) peuvent faire la même course en ordre imposé.
