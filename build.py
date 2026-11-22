@@ -21,6 +21,12 @@ fonts = (
     "@font-face{font-family:'Atkinson';src:url(data:font/woff2;base64,%s) format('woff2');font-weight:700;font-display:swap}"
 ) % (f400, f700)
 
+# app.js + live.js (courses organisées, suivi) insérés avant le démarrage, dans la même portée
+APP = (SRC / "app.js").read_text()
+_mark = "\n/* ---------------- Démarrage ---------------- */"
+assert _mark in APP
+APP = APP.replace(_mark, "\n" + (SRC / "live.js").read_text() + _mark, 1)
+
 html = f"""<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -44,7 +50,8 @@ html = f"""<!DOCTYPE html>
 {(SRC / "body.html").read_text()}
 <script>{leaflet_js}</script>
 <script>{(NM / "@capacitor/core/dist/capacitor.js").read_text()}</script>
-<script>{(SRC / "app.js").read_text()}</script>
+<script>{(NM / "qrcode-generator/dist/qrcode.js").read_text()}</script>
+<script>{APP}</script>
 </body>
 </html>
 """
@@ -87,7 +94,7 @@ manifest = {
 (DIST / "manifest.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, indent=2))
 
 sw = """// O'Guide – service worker : l'appli fonctionne hors connexion une fois ouverte.
-const CACHE = 'oguide-v1.4.0';
+const CACHE = 'oguide-v1.5.0';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-180.png', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));

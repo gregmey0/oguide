@@ -820,6 +820,62 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
 .ios-only{display:none}.ios .ios-only{display:revert}
 .ioshint{border:3px solid var(--acc);border-radius:14px;padding:.7rem .8rem;font-weight:700}
 .ioshint .shr{display:inline-block;border:2px solid currentColor;border-radius:6px;padding:0 .3rem;font-size:.9em}
+
+/* ---- courses organisées et suivi ---- */
+.mapbtns{position:absolute;right:10px;bottom:26px;z-index:800;display:flex;flex-direction:column;gap:8px}
+.mapbtns button{min-height:52px;min-width:52px;padding:0;font-size:1.5rem;background:#000;border-width:2px}
+.orgbar{display:flex;flex-wrap:wrap;gap:.4rem;padding:.5rem .6rem;align-items:center}
+.orgbar button{min-height:46px;padding:.2rem .7rem;font-size:.95rem;border-width:2px}
+.orgmapwrap{position:relative}
+#orgMap{height:50vh}
+.runners{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.45rem}
+.runner{width:100%;justify-content:flex-start;text-align:left;gap:.6rem;min-height:64px;padding:.45rem .6rem;border-width:2px;font-weight:400}
+.runner.sel{border-color:var(--acc)}
+.runner .dot{flex:none;width:34px;height:34px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;border:2px solid #fff}
+.runner .rn{flex:1;min-width:0;display:flex;flex-direction:column}
+.runner .rn small{color:var(--muted);font-size:.82rem}
+.runner .rt{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;display:flex;flex-direction:column}
+.runner .rt small{font-weight:400;color:var(--muted)}
+.al{color:var(--bad);font-weight:700;margin-right:.4rem}.al.soft{color:var(--warn);font-weight:400}
+.rmk span{display:flex;width:34px;height:34px;border-radius:50%;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;border:3px solid #fff;box-shadow:0 0 0 2px #000}
+.rmk em{position:absolute;top:37px;left:50%;transform:translateX(-50%);white-space:nowrap;font-style:normal;font-weight:700;font-size:12px;background:rgba(0,0,0,.78);color:#fff;padding:0 .3rem;border-radius:5px}
+.rmk.stale span{opacity:.45;border-style:dashed}
+.rmk.alert span{box-shadow:0 0 0 3px #FF5A5A,0 0 0 6px #000}
+.rmk.sel span{box-shadow:0 0 0 4px var(--acc),0 0 0 7px #000}
+.tag.st-open{color:var(--ok)}.tag.st-started{color:var(--acc)}.tag.st-closed,.tag.st-deleted{color:var(--muted)}
+.net{font-size:1.2rem}
+#sheet{position:fixed;inset:0;z-index:3500;background:#000;overflow:auto;display:flex;flex-direction:column;padding:var(--sat) var(--sar) var(--sab) var(--sal)}
+#sheet[hidden]{display:none!important}
+#sheet .no-run{display:none}
+.qrbox{display:flex;flex-direction:column;align-items:center;gap:.6rem;text-align:center}
+.qr{background:#fff;padding:10px;border-radius:12px;width:min(80vw,340px)}
+.qr svg{width:100%;height:auto;display:block}
+.code{font-size:2rem;font-weight:700;letter-spacing:.08em;color:var(--acc);margin:.2rem 0}
+.url{word-break:break-all;font-size:.8rem}
+#jCode{font-size:1.5rem;letter-spacing:.08em;text-transform:uppercase;text-align:center}
+#jVideo{width:100%;border-radius:14px;border:3px solid var(--acc)}
+.center{text-align:center}
+.replay{padding:.5rem .7rem 1rem;display:flex;flex-direction:column;gap:.5rem}
+.replay[hidden]{display:none!important}
+.rp-ctl{display:flex;gap:.5rem;align-items:center}
+.rp-ctl button{flex:none;width:64px;min-height:52px;font-size:1.4rem}
+.rp-ctl input[type=range]{flex:1;height:44px;accent-color:var(--acc)}
+.rp-ctl select{flex:none;width:96px}
+.rplegend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.3rem}
+.rplegend .chk{gap:.5rem}
+.rplegend .dot{width:18px;height:18px;border-radius:50%;flex:none;border:2px solid #fff}
+.rplegend .muted{margin-left:auto}
+.follow{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:center;align-items:stretch;text-align:center;gap:1rem;padding:calc(1.5rem + var(--sat)) 1.2rem calc(1.5rem + var(--sab))}
+.fw-icon{font-size:4.5rem;line-height:1}
+.follow h1{font-size:2rem;margin:0}
+.fw-name{font-size:1.3rem;font-weight:700;color:var(--acc);margin:0}
+.fw-state{font-size:1.1rem;margin:0}
+.follow .hold{margin-top:2rem}
+#fwIcon.on{animation:fwpulse 2.4s ease-in-out infinite}
+@keyframes fwpulse{50%{transform:scale(1.12);opacity:.75}}
+@media (prefers-reduced-motion:reduce){#fwIcon.on{animation:none}}
+#runNet{font-size:1.2rem}
+#runNet[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -833,8 +889,12 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
       <div><h1 tabindex="-1">O'Guide</h1><p>Course d'orientation accessible</p></div>
     </div>
     <div id="homeWarn"></div>
+    <div id="homeExtra"></div>
     <button class="primary big" id="hCreate">➕ Créer un parcours</button>
     <button class="big" id="hLib">📚 Mes parcours&nbsp;<span id="hCount"></span></button>
+    <button class="big" id="hJoin">🏃 Rejoindre une course (code ou QR)</button>
+    <button class="big" id="hOrg">📡 Organiser une course</button>
+    <button class="big" id="hTrain">📍 Suivi en pratique libre</button>
     <button class="big" id="hImport">📂 Importer un GPX</button>
     <div class="row"><button id="hSettings">⚙ Réglages</button><button id="hHelp">❔ Aide</button></div>
     <button id="hInstall" hidden>📲 Installer l'appli sur ce téléphone</button>
@@ -860,7 +920,7 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
 
 <!-- BIBLIOTHEQUE -->
 <section id="library" class="screen">
-  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1">Mes parcours</h1></header>
+  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1" id="libTitle">Mes parcours</h1></header>
   <main>
     <button id="libImport">📂 Importer un GPX</button>
     <ul id="libList" class="cards"></ul>
@@ -873,6 +933,7 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
   <div id="detailMap" class="map"></div>
   <main>
     <button class="primary big" id="dtRun">▶ Faire ce parcours</button>
+    <button class="big ok" id="dtOrg">📡 Organiser une course avec ce parcours</button>
     <div class="row"><button id="dtShare">📤 Partager le GPX</button><button id="dtDownload">⬇ Télécharger le GPX</button></div>
     <div class="row"><button id="dtEdit">✋ Corriger les positions</button><button id="dtRename">✏ Renommer</button></div>
     <p class="hint" id="dtEditHint" hidden>Fais glisser une balise sur la carte pour corriger sa position. Appuie à nouveau sur le bouton pour terminer.</p>
@@ -969,7 +1030,7 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
       <div id="runArrowWrap"><svg id="runArrow" viewBox="0 0 100 100"><polygon points="50,4 84,88 50,68 16,88" fill="#FFD400" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg><span id="runArrowNote"></span></div>
       <div class="run-txt"><div id="runDist">—</div><div id="runDir">—</div><div id="runRoute"></div></div>
     </div>
-    <div class="run-line3"><span id="runGps" class="gps none" aria-hidden="true">GPS…</span><span id="runProg" aria-hidden="true"></span><button type="button" id="runOpts">⚙ Options</button></div>
+    <div class="run-line3"><span id="runGps" class="gps none" aria-hidden="true">GPS…</span><span id="runProg" aria-hidden="true"></span><span id="runNet" class="net" hidden aria-hidden="true">📡</span><button type="button" id="runOpts">⚙ Options</button></div>
   </div>
   <div id="runMapWrap"><div id="runMap"></div><button id="runRecenter">⌖ Recentrer</button></div>
   <button id="runTap">🔊 Toucher pour répéter<small id="runMsg"></small></button>
@@ -1007,6 +1068,79 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
   </main>
 </section>
 
+<!-- REJOINDRE -->
+<section id="join" class="screen">
+  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1">Rejoindre une course ou une séance</h1></header>
+  <main>
+    <label>Code (donné par l'organisateur ou l'encadrant)
+      <input type="text" id="jCode" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="HK7-Q4M-ZP2D" maxlength="16"></label>
+    <div class="row"><button type="button" class="primary" id="jLookup">🔎 Chercher</button><button type="button" id="jScan" hidden>📷 Scanner le QR</button></div>
+    <video id="jVideo" playsinline muted hidden></video>
+    <div id="jInfo"></div>
+    <div id="jConfirm" class="card" hidden>
+      <label>Ton nom (visible par l'organisateur)<input type="text" id="jName" autocomplete="given-name" placeholder="Prénom Nom"></label>
+      <button type="button" class="primary big" id="jGo">✔ Rejoindre la course</button>
+    </div>
+  </main>
+</section>
+
+<!-- ORGANISER : PREPARATION -->
+<section id="orgsetup" class="screen">
+  <header class="bar"><button class="back" data-go="detail" aria-label="Retour">←</button><h1 tabindex="-1">Organiser une course</h1></header>
+  <main>
+    <div id="osCourse" class="card"></div>
+    <section class="card">
+      <h2>Course</h2>
+      <label>Nom affiché aux coureurs<input type="text" id="osName"></label>
+      <label>Départ<select id="osStart"><option value="mass">Groupé : je donne le départ à tous</option><option value="individual">Individuel : chacun part de son côté</option></select></label>
+      <p class="hint" id="osStartHelp"></p>
+      <label>Rayon de validation des balises<select id="osRadius"><option value="5">5 m</option><option value="8">8 m</option><option value="10">10 m</option><option value="15">15 m</option><option value="20">20 m</option></select></label>
+      <label class="chk"><input type="checkbox" id="osShowMe" checked> Les coureurs peuvent voir leur position sur la carte (profil malvoyant, et coureurs Shadow CO). Décocher pour une vraie course d'orientation.</label>
+      <p class="hint">Le guidage vocal, les bips d'approche et la carte contrastée restent ceux réglés sur chaque téléphone. Les balises se prennent dans l'ordre.</p>
+    </section>
+    <p class="hint">Les positions passent par un relais internet public, chiffrées avec le code de la course : seuls ceux qui ont le code peuvent les lire. Des coureurs voyants peuvent rejoindre la même course avec l'application Shadow CO.</p>
+    <button type="button" class="primary big" id="osCreate">📡 Créer la course</button>
+  </main>
+</section>
+
+<!-- ORGANISER : SUIVI -->
+<section id="org" class="screen">
+  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1" id="orgTitle">Course</h1><span id="orgNet" class="net">📡</span></header>
+  <div class="orgbar" id="orgbarLive">
+    <span id="orgStatus" class="tag"></span>
+    <button type="button" id="orgQR">🔗 Code / QR</button>
+    <button type="button" class="primary" id="orgLaunch" hidden>▶ Lancer le départ</button>
+    <button type="button" id="orgRank">📊 Classement</button>
+    <button type="button" id="orgReplayBtn">⏯ Replay</button>
+    <button type="button" class="danger" id="orgClose">🏁 Clore</button>
+    <button type="button" id="orgMore" aria-label="Plus d'options">⋯</button>
+  </div>
+  <div class="orgmapwrap"><div id="orgMap" class="map"></div><div class="mapbtns"><button type="button" id="orgFit" aria-label="Voir tout le monde">🗺</button></div></div>
+  <div id="orgReplay" class="replay" hidden>
+    <div class="rp-ctl"><button type="button" class="primary" id="rpPlay" aria-label="Lecture / pause">▶</button><input type="range" id="rpSlider" min="0" max="1000" value="0" aria-label="Moment de la course"><select id="rpSpeed" aria-label="Vitesse"><option value="10">×10</option><option value="30" selected>×30</option><option value="60">×60</option><option value="120">×120</option></select></div>
+    <p id="rpTime" class="center"></p>
+    <ul id="rpLegend" class="rplegend"></ul>
+    <button type="button" id="rpExit">✖ Revenir au direct</button>
+  </div>
+  <main id="orgLive">
+    <p id="orgCount"></p>
+    <ul id="orgList" class="runners"></ul>
+  </main>
+</section>
+
+<!-- SUIVI EN PRATIQUE LIBRE : PRATIQUANT -->
+<section id="follow" class="screen">
+  <main class="follow">
+    <div class="fw-icon" id="fwIcon" aria-hidden="true">📍</div>
+    <h1 tabindex="-1" id="fwTitle">Suivi en cours</h1>
+    <p class="fw-name" id="fwName"></p>
+    <p id="fwState" class="fw-state"></p>
+    <p class="hint" id="fwHint">Rien à faire : range le téléphone dans la poche ou le sac.<span class="web-only"> Sur navigateur, garde l'écran allumé (le verrouiller coupe le suivi).</span></p>
+    <button type="button" class="hold danger big" id="fwStop">⏹ Arrêter le suivi<small>appui long</small></button>
+    <button type="button" class="big" id="fwHome" data-go="home" hidden>Retour à l'accueil</button>
+  </main>
+</section>
+
 <!-- AIDE -->
 <section id="help" class="screen">
   <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1">Aide</h1></header>
@@ -1032,6 +1166,18 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
       <li>À l'arrivée sur la balise, validation automatique avec un carillon, puis annonce de la suivante. Si le GPS dérive, l'accompagnateur peut <b>Valider</b> (appui long).</li>
       <li>Le chrono démarre à la validation du départ. Les temps intermédiaires et la trace sont exportables à la fin.</li>
     </ul>
+    <h2>4. Courses organisées</h2>
+    <ul>
+      <li><b>Organisateur</b> : « Organiser une course » (ou le bouton 📡 de la fiche d'un parcours) crée une course avec un code et un QR code. Départ groupé ou individuel, rayon de validation, affichage de la position pour les malvoyants.</li>
+      <li>Le tableau de bord montre tous les coureurs sur la carte (👂 non-voyant, 👁 malvoyant), leurs balises, leurs temps, la batterie et des alertes (immobile depuis 4 min, sans nouvelles). Classement, résultats CSV, traces GPX et ⏯ Replay.</li>
+      <li><b>Coureur</b> : « Rejoindre une course », tape le code (ou scanne le QR), indique ton nom. Le guidage est le même qu'en épreuve seule ; en départ groupé, le chrono démarre à l'annonce « Départ ! ».</li>
+      <li>Même relais que l'application Shadow CO : des coureurs voyants (Shadow CO) et non-voyants ou malvoyants (O'Guide) peuvent faire la même course.</li>
+    </ul>
+    <h2>5. Suivi en pratique libre</h2>
+    <ul>
+      <li><b>Encadrant</b> : « Suivi en pratique libre » crée une séance sans parcours. Les pratiquants la rejoignent avec le code et rangent leur téléphone ; tu les suis sur la carte en direct (distance, vitesse, alertes), puis en replay. 📊 Bilan : tableau CSV et traces GPX.</li>
+      <li><b>Pratiquant</b> : rien à faire. Une voix confirme « Suivi lancé ». Pour arrêter : appui long sur « Arrêter le suivi ».</li>
+    </ul>
     <h2>Conseils terrain</h2>
     <ul>
       <li class="web-only">Garde l'écran allumé et l'appli au premier plan : un navigateur coupe le GPS quand l'écran est verrouillé. L'appli demande au téléphone de rester allumé.</li>
@@ -1048,6 +1194,10 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
   </main>
 </section>
 
+<div id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <header class="bar"><h1 id="sheetTitle" tabindex="-1"></h1><button type="button" class="primary sheetClose">✔ Fermer</button></header>
+  <main id="sheetBody"></main>
+</div>
 <div id="toast" role="status"></div>
 <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="box">
@@ -1070,9 +1220,2307 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
 var capacitorExports=function(e){"use strict";var t;e.ExceptionCode=void 0,(t=e.ExceptionCode||(e.ExceptionCode={})).Unimplemented="UNIMPLEMENTED",t.Unavailable="UNAVAILABLE";class n extends Error{constructor(e,t,n){super(e),this.message=e,this.code=t,this.data=n}}const s=t=>{const s=t.CapacitorCustomPlatform||null,r=t.Capacitor||{},i=r.Plugins=r.Plugins||{},a=()=>null!==s?s.name:(e=>{var t,n;return(null==e?void 0:e.androidBridge)?"android":(null===(n=null===(t=null==e?void 0:e.webkit)||void 0===t?void 0:t.messageHandlers)||void 0===n?void 0:n.bridge)?"ios":"web"})(t),o=e=>{var t;return null===(t=r.PluginHeaders)||void 0===t?void 0:t.find(t=>t.name===e)},c=new Map;return r.convertFileSrc||(r.convertFileSrc=e=>e),r.getPlatform=a,r.handleError=e=>t.console.error(e),r.isNativePlatform=()=>"web"!==a(),r.isPluginAvailable=e=>{const t=c.get(e);return!!(null==t?void 0:t.platforms.has(a()))||!!o(e)},r.registerPlugin=(t,l={})=>{const d=c.get(t);if(d)return console.warn(`Capacitor plugin "${t}" already registered. Cannot register plugins twice.`),d.proxy;const u=a(),p=o(t);let m;const h=i=>{let a;const o=(...o)=>{const c=(async()=>(!m&&u in l?m=m="function"==typeof l[u]?await l[u]():l[u]:null!==s&&!m&&"web"in l&&(m=m="function"==typeof l.web?await l.web():l.web),m))().then(s=>{const c=((s,i)=>{var a,o;if(!p){if(s)return null===(o=s[i])||void 0===o?void 0:o.bind(s);throw new n(`"${t}" plugin is not implemented on ${u}`,e.ExceptionCode.Unimplemented)}{const e=null==p?void 0:p.methods.find(e=>i===e.name);if(e)return"promise"===e.rtype?e=>r.nativePromise(t,i.toString(),e):(e,n)=>r.nativeCallback(t,i.toString(),e,n);if(s)return null===(a=s[i])||void 0===a?void 0:a.bind(s)}})(s,i);if(c){const e=c(...o);return a=null==e?void 0:e.remove,e}throw new n(`"${t}.${i}()" is not implemented on ${u}`,e.ExceptionCode.Unimplemented)});return"addListener"===i&&(c.remove=async()=>a()),c};return o.toString=()=>`${i.toString()}() { [capacitor code] }`,Object.defineProperty(o,"name",{value:i,writable:!1,configurable:!1}),o},w=h("addListener"),g=h("removeListener"),v=(e,t)=>{const n=w({eventName:e},t).then(e=>e),s=async()=>{const t=await n;await g({eventName:e,callbackId:t})},r=new Promise(e=>n.then(()=>e({remove:s})));return r.remove=async()=>{console.warn("Using addListener() without 'await' is deprecated."),await s()},r},y=new Proxy({},{get(e,t){switch(t){case"$$typeof":return;case"toJSON":return()=>({});case"addListener":return p?v:w;case"removeListener":return g;default:return h(t)}}});return i[t]=y,c.set(t,{name:t,proxy:y,platforms:new Set([...Object.keys(l),...p?[u]:[]])}),y},r.Exception=n,r.DEBUG=!!r.DEBUG,r.isLoggingEnabled=!!r.isLoggingEnabled,r},r=(e=>e.Capacitor=s(e))("undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:"undefined"!=typeof window?window:"undefined"!=typeof global?global:{}),i=r.registerPlugin;class a{constructor(){this.listeners={},this.retainedEventArguments={},this.windowListeners={}}addListener(e,t){let n=!1;this.listeners[e]||(this.listeners[e]=[],n=!0),this.listeners[e].push(t);const s=this.windowListeners[e];s&&!s.registered&&this.addWindowListener(s),n&&this.sendRetainedArgumentsForEvent(e);return Promise.resolve({remove:async()=>this.removeListener(e,t)})}async removeAllListeners(){this.listeners={};for(const e in this.windowListeners)this.removeWindowListener(this.windowListeners[e]);this.windowListeners={}}notifyListeners(e,t,n){const s=this.listeners[e];if(s)s.forEach(e=>e(t));else if(n){let n=this.retainedEventArguments[e];n||(n=[]),n.push(t),this.retainedEventArguments[e]=n}}hasListeners(e){var t;return!!(null===(t=this.listeners[e])||void 0===t?void 0:t.length)}registerWindowListener(e,t){this.windowListeners[t]={registered:!1,windowEventName:e,pluginEventName:t,handler:e=>{this.notifyListeners(t,e)}}}unimplemented(t="not implemented"){return new r.Exception(t,e.ExceptionCode.Unimplemented)}unavailable(t="not available"){return new r.Exception(t,e.ExceptionCode.Unavailable)}async removeListener(e,t){const n=this.listeners[e];if(!n)return;const s=n.indexOf(t);-1!==s&&this.listeners[e].splice(s,1),this.listeners[e].length||this.removeWindowListener(this.windowListeners[e])}addWindowListener(e){window.addEventListener(e.windowEventName,e.handler),e.registered=!0}removeWindowListener(e){e&&(window.removeEventListener(e.windowEventName,e.handler),e.registered=!1)}sendRetainedArgumentsForEvent(e){const t=this.retainedEventArguments[e];t&&(delete this.retainedEventArguments[e],t.forEach(t=>{this.notifyListeners(e,t)}))}}const o=i("WebView"),c=e=>encodeURIComponent(e).replace(/%(2[346B]|5E|60|7C)/g,decodeURIComponent).replace(/[()]/g,escape),l=e=>e.replace(/(%[\dA-F]{2})+/gi,decodeURIComponent);class d extends a{async getCookies(){const e=document.cookie,t={};return e.split(";").forEach(e=>{if(e.length<=0)return;let[n,s]=e.replace(/=/,"CAP_COOKIE").split("CAP_COOKIE");n=l(n).trim(),s=l(s).trim(),t[n]=s}),t}async setCookie(e){try{const t=c(e.key),n=c(e.value),s=e.expires?`; expires=${e.expires.replace("expires=","")}`:"",r=(e.path||"/").replace("path=",""),i=null!=e.url&&e.url.length>0?`domain=${e.url}`:"";document.cookie=`${t}=${n||""}${s}; path=${r}; ${i};`}catch(e){return Promise.reject(e)}}async deleteCookie(e){try{document.cookie=`${e.key}=; Max-Age=0`}catch(e){return Promise.reject(e)}}async clearCookies(){try{const e=document.cookie.split(";")||[];for(const t of e)document.cookie=t.replace(/^ +/,"").replace(/=.*/,`=;expires=${(new Date).toUTCString()};path=/`)}catch(e){return Promise.reject(e)}}async clearAllCookies(){try{await this.clearCookies()}catch(e){return Promise.reject(e)}}}const u=i("CapacitorCookies",{web:()=>new d}),p=(e,t={})=>{const n=Object.assign({method:e.method||"GET",headers:e.headers},t),s=((e={})=>{const t=Object.keys(e);return Object.keys(e).map(e=>e.toLocaleLowerCase()).reduce((n,s,r)=>(n[s]=e[t[r]],n),{})})(e.headers)["content-type"]||"";if("string"==typeof e.data)n.body=e.data;else if(s.includes("application/x-www-form-urlencoded")){const t=new URLSearchParams;for(const[n,s]of Object.entries(e.data||{}))t.set(n,s);n.body=t.toString()}else if(s.includes("multipart/form-data")||e.data instanceof FormData){const t=new FormData;if(e.data instanceof FormData)e.data.forEach((e,n)=>{t.append(n,e)});else for(const n of Object.keys(e.data))t.append(n,e.data[n]);n.body=t;const s=new Headers(n.headers);s.delete("content-type"),n.headers=s}else(s.includes("application/json")||"object"==typeof e.data)&&(n.body=JSON.stringify(e.data));return n};class m extends a{async request(e){const t=p(e,e.webFetchExtra),n=((e,t=!0)=>e?Object.entries(e).reduce((e,n)=>{const[s,r]=n;let i,a;return Array.isArray(r)?(a="",r.forEach(e=>{i=t?encodeURIComponent(e):e,a+=`${s}=${i}&`}),a.slice(0,-1)):(i=t?encodeURIComponent(r):r,a=`${s}=${i}`),`${e}&${a}`},"").substr(1):null)(e.params,e.shouldEncodeUrlParams),s=n?`${e.url}?${n}`:e.url,r=await fetch(s,t),i=r.headers.get("content-type")||"";let a,o,{responseType:c="text"}=r.ok?e:{};switch(i.includes("application/json")&&(c="json"),c){case"arraybuffer":case"blob":o=await r.blob(),a=await(async e=>new Promise((t,n)=>{const s=new FileReader;s.onload=()=>{const e=s.result;t(e.indexOf(",")>=0?e.split(",")[1]:e)},s.onerror=e=>n(e),s.readAsDataURL(e)}))(o);break;case"json":a=await r.json();break;default:a=await r.text()}const l={};return r.headers.forEach((e,t)=>{l[t]=e}),{data:a,headers:l,status:r.status,url:r.url}}async get(e){return this.request(Object.assign(Object.assign({},e),{method:"GET"}))}async post(e){return this.request(Object.assign(Object.assign({},e),{method:"POST"}))}async put(e){return this.request(Object.assign(Object.assign({},e),{method:"PUT"}))}async patch(e){return this.request(Object.assign(Object.assign({},e),{method:"PATCH"}))}async delete(e){return this.request(Object.assign(Object.assign({},e),{method:"DELETE"}))}}const h=i("CapacitorHttp",{web:()=>new m});var w,g;e.SystemBarsStyle=void 0,(w=e.SystemBarsStyle||(e.SystemBarsStyle={})).Dark="DARK",w.Light="LIGHT",w.Default="DEFAULT",e.SystemBarType=void 0,(g=e.SystemBarType||(e.SystemBarType={})).StatusBar="StatusBar",g.NavigationBar="NavigationBar";class v extends a{async setStyle(){this.unavailable("not available for web")}async setAnimation(){this.unavailable("not available for web")}async show(){this.unavailable("not available for web")}async hide(){this.unavailable("not available for web")}}const y=i("SystemBars",{web:()=>new v});return e.Capacitor=r,e.CapacitorCookies=u,e.CapacitorException=n,e.CapacitorHttp=h,e.SystemBars=y,e.WebPlugin=a,e.WebView=o,e.buildRequestInit=p,e.registerPlugin=i,Object.defineProperty(e,"__esModule",{value:!0}),e}({});
 //# sourceMappingURL=capacitor.js.map
 </script>
+<script>//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+var qrcode = function() {
+
+  //---------------------------------------------------------------------
+  // qrcode
+  //---------------------------------------------------------------------
+
+  /**
+   * qrcode
+   * @param typeNumber 1 to 40
+   * @param errorCorrectionLevel 'L','M','Q','H'
+   */
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+
+    var PAD0 = 0xEC;
+    var PAD1 = 0x11;
+
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var row = 0; row < moduleCount; row += 1) {
+          modules[row] = new Array(moduleCount);
+          for (var col = 0; col < moduleCount; col += 1) {
+            modules[row][col] = null;
+          }
+        }
+        return modules;
+      }(_moduleCount);
+
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+
+      if (_typeNumber >= 7) {
+        setupTypeNumber(test);
+      }
+
+      if (_dataCache == null) {
+        _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      }
+
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+
+      for (var r = -1; r <= 7; r += 1) {
+
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+
+        for (var c = -1; c <= 7; c += 1) {
+
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+
+          if ( (0 <= r && r <= 6 && (c == 0 || c == 6) )
+              || (0 <= c && c <= 6 && (r == 0 || r == 6) )
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+
+      var minLostPoint = 0;
+      var pattern = 0;
+
+      for (var i = 0; i < 8; i += 1) {
+
+        makeImpl(true, i);
+
+        var lostPoint = QRUtil.getLostPoint(_this);
+
+        if (i == 0 || minLostPoint > lostPoint) {
+          minLostPoint = lostPoint;
+          pattern = i;
+        }
+      }
+
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+
+      for (var r = 8; r < _moduleCount - 8; r += 1) {
+        if (_modules[r][6] != null) {
+          continue;
+        }
+        _modules[r][6] = (r % 2 == 0);
+      }
+
+      for (var c = 8; c < _moduleCount - 8; c += 1) {
+        if (_modules[6][c] != null) {
+          continue;
+        }
+        _modules[6][c] = (c % 2 == 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+
+      for (var i = 0; i < pos.length; i += 1) {
+
+        for (var j = 0; j < pos.length; j += 1) {
+
+          var row = pos[i];
+          var col = pos[j];
+
+          if (_modules[row][col] != null) {
+            continue;
+          }
+
+          for (var r = -2; r <= 2; r += 1) {
+
+            for (var c = -2; c <= 2; c += 1) {
+
+              if (r == -2 || r == 2 || c == -2 || c == 2
+                  || (r == 0 && c == 0) ) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+
+      // vertical
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 6) {
+          _modules[i][8] = mod;
+        } else if (i < 8) {
+          _modules[i + 1][8] = mod;
+        } else {
+          _modules[_moduleCount - 15 + i][8] = mod;
+        }
+      }
+
+      // horizontal
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 8) {
+          _modules[8][_moduleCount - i - 1] = mod;
+        } else if (i < 9) {
+          _modules[8][15 - i - 1 + 1] = mod;
+        } else {
+          _modules[8][15 - i - 1] = mod;
+        }
+      }
+
+      // fixed module
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+
+      var inc = -1;
+      var row = _moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+
+        if (col == 6) col -= 1;
+
+        while (true) {
+
+          for (var c = 0; c < 2; c += 1) {
+
+            if (_modules[row][col - c] == null) {
+
+              var dark = false;
+
+              if (byteIndex < data.length) {
+                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+              }
+
+              var mask = maskFunc(row, col - c);
+
+              if (mask) {
+                dark = !dark;
+              }
+
+              _modules[row][col - c] = dark;
+              bitIndex -= 1;
+
+              if (bitIndex == -1) {
+                byteIndex += 1;
+                bitIndex = 7;
+              }
+            }
+          }
+
+          row += inc;
+
+          if (row < 0 || _moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    };
+
+    var createBytes = function(buffer, rsBlocks) {
+
+      var offset = 0;
+
+      var maxDcCount = 0;
+      var maxEcCount = 0;
+
+      var dcdata = new Array(rsBlocks.length);
+      var ecdata = new Array(rsBlocks.length);
+
+      for (var r = 0; r < rsBlocks.length; r += 1) {
+
+        var dcCount = rsBlocks[r].dataCount;
+        var ecCount = rsBlocks[r].totalCount - dcCount;
+
+        maxDcCount = Math.max(maxDcCount, dcCount);
+        maxEcCount = Math.max(maxEcCount, ecCount);
+
+        dcdata[r] = new Array(dcCount);
+
+        for (var i = 0; i < dcdata[r].length; i += 1) {
+          dcdata[r][i] = 0xff & buffer.getBuffer()[i + offset];
+        }
+        offset += dcCount;
+
+        var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+        var rawPoly = qrPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+        var modPoly = rawPoly.mod(rsPoly);
+        ecdata[r] = new Array(rsPoly.getLength() - 1);
+        for (var i = 0; i < ecdata[r].length; i += 1) {
+          var modIndex = i + modPoly.getLength() - ecdata[r].length;
+          ecdata[r][i] = (modIndex >= 0)? modPoly.getAt(modIndex) : 0;
+        }
+      }
+
+      var totalCodeCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalCodeCount += rsBlocks[i].totalCount;
+      }
+
+      var data = new Array(totalCodeCount);
+      var index = 0;
+
+      for (var i = 0; i < maxDcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < dcdata[r].length) {
+            data[index] = dcdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      for (var i = 0; i < maxEcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < ecdata[r].length) {
+            data[index] = ecdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      return data;
+    };
+
+    var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+
+      var buffer = qrBitBuffer();
+
+      for (var i = 0; i < dataList.length; i += 1) {
+        var data = dataList[i];
+        buffer.put(data.getMode(), 4);
+        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+        data.write(buffer);
+      }
+
+      // calc num max data.
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalDataCount += rsBlocks[i].dataCount;
+      }
+
+      if (buffer.getLengthInBits() > totalDataCount * 8) {
+        throw 'code length overflow. ('
+          + buffer.getLengthInBits()
+          + '>'
+          + totalDataCount * 8
+          + ')';
+      }
+
+      // end code
+      if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+        buffer.put(0, 4);
+      }
+
+      // padding
+      while (buffer.getLengthInBits() % 8 != 0) {
+        buffer.putBit(false);
+      }
+
+      // padding
+      while (true) {
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD0, 8);
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD1, 8);
+      }
+
+      return createBytes(buffer, rsBlocks);
+    };
+
+    _this.addData = function(data, mode) {
+
+      mode = mode || 'Byte';
+
+      var newData = null;
+
+      switch(mode) {
+      case 'Numeric' :
+        newData = qrNumber(data);
+        break;
+      case 'Alphanumeric' :
+        newData = qrAlphaNum(data);
+        break;
+      case 'Byte' :
+        newData = qr8BitByte(data);
+        break;
+      case 'Kanji' :
+        newData = qrKanji(data);
+        break;
+      default :
+        throw 'mode:' + mode;
+      }
+
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
+        throw row + ',' + col;
+      }
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() {
+      return _moduleCount;
+    };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = qrBitBuffer();
+
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+            data.write(buffer);
+          }
+
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) {
+            totalDataCount += rsBlocks[i].dataCount;
+          }
+
+          if (buffer.getLengthInBits() <= totalDataCount * 8) {
+            break;
+          }
+        }
+
+        _typeNumber = typeNumber;
+      }
+
+      makeImpl(false, getBestMaskPattern() );
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var qrHtml = '';
+
+      qrHtml += '<table style="';
+      qrHtml += ' border-width: 0px; border-style: none;';
+      qrHtml += ' border-collapse: collapse;';
+      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
+      qrHtml += '">';
+      qrHtml += '<tbody>';
+
+      for (var r = 0; r < _this.getModuleCount(); r += 1) {
+
+        qrHtml += '<tr>';
+
+        for (var c = 0; c < _this.getModuleCount(); c += 1) {
+          qrHtml += '<td style="';
+          qrHtml += ' border-width: 0px; border-style: none;';
+          qrHtml += ' border-collapse: collapse;';
+          qrHtml += ' padding: 0px; margin: 0px;';
+          qrHtml += ' width: ' + cellSize + 'px;';
+          qrHtml += ' height: ' + cellSize + 'px;';
+          qrHtml += ' background-color: ';
+          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += ';';
+          qrHtml += '"/>';
+        }
+
+        qrHtml += '</tr>';
+      }
+
+      qrHtml += '</tbody>';
+      qrHtml += '</table>';
+
+      return qrHtml;
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt, title) {
+
+      var opts = {};
+      if (typeof arguments[0] == 'object') {
+        // Called by options.
+        opts = arguments[0];
+        // overwrite cellSize and margin.
+        cellSize = opts.cellSize;
+        margin = opts.margin;
+        alt = opts.alt;
+        title = opts.title;
+      }
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      // Compose alt property surrogate
+      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
+      alt.text = alt.text || null;
+      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
+
+      // Compose title property surrogate
+      title = (typeof title === 'string') ? {text: title} : title || {};
+      title.text = title.text || null;
+      title.id = (title.text) ? title.id || 'qrcode-title' : null;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var c, mc, r, mr, qrSvg='', rect;
+
+      rect = 'l' + cellSize + ',0 0,' + cellSize +
+        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
+
+      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
+      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
+      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
+      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
+          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
+      qrSvg += '>';
+      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
+          escapeXml(title.text) + '</title>' : '';
+      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
+          escapeXml(alt.text) + '</description>' : '';
+      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
+      qrSvg += '<path d="';
+
+      for (r = 0; r < _this.getModuleCount(); r += 1) {
+        mr = r * cellSize + margin;
+        for (c = 0; c < _this.getModuleCount(); c += 1) {
+          if (_this.isDark(r, c) ) {
+            mc = c*cellSize+margin;
+            qrSvg += 'M' + mc + ',' + mr + rect;
+          }
+        }
+      }
+
+      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '</svg>';
+
+      return qrSvg;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      return createDataURL(size, size, function(x, y) {
+        if (min <= x && x < max && min <= y && y < max) {
+          var c = Math.floor( (x - min) / cellSize);
+          var r = Math.floor( (y - min) / cellSize);
+          return _this.isDark(r, c)? 0 : 1;
+        } else {
+          return 1;
+        }
+      } );
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+
+      var img = '';
+      img += '<img';
+      img += '\u0020src="';
+      img += _this.createDataURL(cellSize, margin);
+      img += '"';
+      img += '\u0020width="';
+      img += size;
+      img += '"';
+      img += '\u0020height="';
+      img += size;
+      img += '"';
+      if (alt) {
+        img += '\u0020alt="';
+        img += escapeXml(alt);
+        img += '"';
+      }
+      img += '/>';
+
+      return img;
+    };
+
+    var escapeXml = function(s) {
+      var escaped = '';
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charAt(i);
+        switch(c) {
+        case '<': escaped += '&lt;'; break;
+        case '>': escaped += '&gt;'; break;
+        case '&': escaped += '&amp;'; break;
+        case '"': escaped += '&quot;'; break;
+        default : escaped += c; break;
+        }
+      }
+      return escaped;
+    };
+
+    var _createHalfASCII = function(margin) {
+      var cellSize = 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r1, r2, p;
+
+      var blocks = {
+        '██': '█',
+        '█ ': '▀',
+        ' █': '▄',
+        '  ': ' '
+      };
+
+      var blocksLastLineNoMargin = {
+        '██': '▀',
+        '█ ': '▀',
+        ' █': ' ',
+        '  ': ' '
+      };
+
+      var ascii = '';
+      for (y = 0; y < size; y += 2) {
+        r1 = Math.floor((y - min) / cellSize);
+        r2 = Math.floor((y + 1 - min) / cellSize);
+        for (x = 0; x < size; x += 1) {
+          p = '█';
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
+            p = ' ';
+          }
+
+          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
+            p += ' ';
+          }
+          else {
+            p += '█';
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
+        }
+
+        ascii += '\n';
+      }
+
+      if (size % 2 && margin > 0) {
+        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1;
+
+      if (cellSize < 2) {
+        return _createHalfASCII(margin);
+      }
+
+      cellSize -= 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r, p;
+
+      var white = Array(cellSize+1).join('██');
+      var black = Array(cellSize+1).join('  ');
+
+      var ascii = '';
+      var line = '';
+      for (y = 0; y < size; y += 1) {
+        r = Math.floor( (y - min) / cellSize);
+        line = '';
+        for (x = 0; x < size; x += 1) {
+          p = 1;
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
+            p = 0;
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          line += p ? white : black;
+        }
+
+        for (r = 0; r < cellSize; r += 1) {
+          ascii += line + '\n';
+        }
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? 'black' : 'white';
+          context.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytesFuncs = {
+    'default' : function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        bytes.push(c & 0xff);
+      }
+      return bytes;
+    }
+  };
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
+
+  //---------------------------------------------------------------------
+  // qrcode.createStringToBytes
+  //---------------------------------------------------------------------
+
+  /**
+   * @param unicodeData base64 string of byte array.
+   * [16bit Unicode],[16bit Bytes], ...
+   * @param numChars
+   */
+  qrcode.createStringToBytes = function(unicodeData, numChars) {
+
+    // create conversion map.
+
+    var unicodeMap = function() {
+
+      var bin = base64DecodeInputStream(unicodeData);
+      var read = function() {
+        var b = bin.read();
+        if (b == -1) throw 'eof';
+        return b;
+      };
+
+      var count = 0;
+      var unicodeMap = {};
+      while (true) {
+        var b0 = bin.read();
+        if (b0 == -1) break;
+        var b1 = read();
+        var b2 = read();
+        var b3 = read();
+        var k = String.fromCharCode( (b0 << 8) | b1);
+        var v = (b2 << 8) | b3;
+        unicodeMap[k] = v;
+        count += 1;
+      }
+      if (count != numChars) {
+        throw count + ' != ' + numChars;
+      }
+
+      return unicodeMap;
+    }();
+
+    var unknownChar = '?'.charCodeAt(0);
+
+    return function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        if (c < 128) {
+          bytes.push(c);
+        } else {
+          var b = unicodeMap[s.charAt(i)];
+          if (typeof b == 'number') {
+            if ( (b & 0xff) == b) {
+              // 1byte
+              bytes.push(b);
+            } else {
+              // 2bytes
+              bytes.push(b >>> 8);
+              bytes.push(b & 0xff);
+            }
+          } else {
+            bytes.push(unknownChar);
+          }
+        }
+      }
+      return bytes;
+    };
+  };
+
+  //---------------------------------------------------------------------
+  // QRMode
+  //---------------------------------------------------------------------
+
+  var QRMode = {
+    MODE_NUMBER :    1 << 0,
+    MODE_ALPHA_NUM : 1 << 1,
+    MODE_8BIT_BYTE : 1 << 2,
+    MODE_KANJI :     1 << 3
+  };
+
+  //---------------------------------------------------------------------
+  // QRErrorCorrectionLevel
+  //---------------------------------------------------------------------
+
+  var QRErrorCorrectionLevel = {
+    L : 1,
+    M : 0,
+    Q : 3,
+    H : 2
+  };
+
+  //---------------------------------------------------------------------
+  // QRMaskPattern
+  //---------------------------------------------------------------------
+
+  var QRMaskPattern = {
+    PATTERN000 : 0,
+    PATTERN001 : 1,
+    PATTERN010 : 2,
+    PATTERN011 : 3,
+    PATTERN100 : 4,
+    PATTERN101 : 5,
+    PATTERN110 : 6,
+    PATTERN111 : 7
+  };
+
+  //---------------------------------------------------------------------
+  // QRUtil
+  //---------------------------------------------------------------------
+
+  var QRUtil = function() {
+
+    var PATTERN_POSITION_TABLE = [
+      [],
+      [6, 18],
+      [6, 22],
+      [6, 26],
+      [6, 30],
+      [6, 34],
+      [6, 22, 38],
+      [6, 24, 42],
+      [6, 26, 46],
+      [6, 28, 50],
+      [6, 30, 54],
+      [6, 32, 58],
+      [6, 34, 62],
+      [6, 26, 46, 66],
+      [6, 26, 48, 70],
+      [6, 26, 50, 74],
+      [6, 30, 54, 78],
+      [6, 30, 56, 82],
+      [6, 30, 58, 86],
+      [6, 34, 62, 90],
+      [6, 28, 50, 72, 94],
+      [6, 26, 50, 74, 98],
+      [6, 30, 54, 78, 102],
+      [6, 28, 54, 80, 106],
+      [6, 32, 58, 84, 110],
+      [6, 30, 58, 86, 114],
+      [6, 34, 62, 90, 118],
+      [6, 26, 50, 74, 98, 122],
+      [6, 30, 54, 78, 102, 126],
+      [6, 26, 52, 78, 104, 130],
+      [6, 30, 56, 82, 108, 134],
+      [6, 34, 60, 86, 112, 138],
+      [6, 30, 58, 86, 114, 142],
+      [6, 34, 62, 90, 118, 146],
+      [6, 30, 54, 78, 102, 126, 150],
+      [6, 24, 50, 76, 102, 128, 154],
+      [6, 28, 54, 80, 106, 132, 158],
+      [6, 32, 58, 84, 110, 136, 162],
+      [6, 26, 54, 82, 110, 138, 166],
+      [6, 30, 58, 86, 114, 142, 170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+
+    var _this = {};
+
+    var getBCHDigit = function(data) {
+      var digit = 0;
+      while (data != 0) {
+        digit += 1;
+        data >>>= 1;
+      }
+      return digit;
+    };
+
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+        d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+      }
+      return ( (data << 10) | d) ^ G15_MASK;
+    };
+
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+        d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+      }
+      return (data << 12) | d;
+    };
+
+    _this.getPatternPosition = function(typeNumber) {
+      return PATTERN_POSITION_TABLE[typeNumber - 1];
+    };
+
+    _this.getMaskFunction = function(maskPattern) {
+
+      switch (maskPattern) {
+
+      case QRMaskPattern.PATTERN000 :
+        return function(i, j) { return (i + j) % 2 == 0; };
+      case QRMaskPattern.PATTERN001 :
+        return function(i, j) { return i % 2 == 0; };
+      case QRMaskPattern.PATTERN010 :
+        return function(i, j) { return j % 3 == 0; };
+      case QRMaskPattern.PATTERN011 :
+        return function(i, j) { return (i + j) % 3 == 0; };
+      case QRMaskPattern.PATTERN100 :
+        return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 == 0; };
+      case QRMaskPattern.PATTERN101 :
+        return function(i, j) { return (i * j) % 2 + (i * j) % 3 == 0; };
+      case QRMaskPattern.PATTERN110 :
+        return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 == 0; };
+      case QRMaskPattern.PATTERN111 :
+        return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 == 0; };
+
+      default :
+        throw 'bad maskPattern:' + maskPattern;
+      }
+    };
+
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = qrPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i += 1) {
+        a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+      }
+      return a;
+    };
+
+    _this.getLengthInBits = function(mode, type) {
+
+      if (1 <= type && type < 10) {
+
+        // 1 - 9
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 10;
+        case QRMode.MODE_ALPHA_NUM : return 9;
+        case QRMode.MODE_8BIT_BYTE : return 8;
+        case QRMode.MODE_KANJI     : return 8;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 27) {
+
+        // 10 - 26
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 12;
+        case QRMode.MODE_ALPHA_NUM : return 11;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 10;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 41) {
+
+        // 27 - 40
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 14;
+        case QRMode.MODE_ALPHA_NUM : return 13;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 12;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else {
+        throw 'type:' + type;
+      }
+    };
+
+    _this.getLostPoint = function(qrcode) {
+
+      var moduleCount = qrcode.getModuleCount();
+
+      var lostPoint = 0;
+
+      // LEVEL1
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount; col += 1) {
+
+          var sameCount = 0;
+          var dark = qrcode.isDark(row, col);
+
+          for (var r = -1; r <= 1; r += 1) {
+
+            if (row + r < 0 || moduleCount <= row + r) {
+              continue;
+            }
+
+            for (var c = -1; c <= 1; c += 1) {
+
+              if (col + c < 0 || moduleCount <= col + c) {
+                continue;
+              }
+
+              if (r == 0 && c == 0) {
+                continue;
+              }
+
+              if (dark == qrcode.isDark(row + r, col + c) ) {
+                sameCount += 1;
+              }
+            }
+          }
+
+          if (sameCount > 5) {
+            lostPoint += (3 + sameCount - 5);
+          }
+        }
+      };
+
+      // LEVEL2
+
+      for (var row = 0; row < moduleCount - 1; row += 1) {
+        for (var col = 0; col < moduleCount - 1; col += 1) {
+          var count = 0;
+          if (qrcode.isDark(row, col) ) count += 1;
+          if (qrcode.isDark(row + 1, col) ) count += 1;
+          if (qrcode.isDark(row, col + 1) ) count += 1;
+          if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+          if (count == 0 || count == 4) {
+            lostPoint += 3;
+          }
+        }
+      }
+
+      // LEVEL3
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount - 6; col += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row, col + 1)
+              &&  qrcode.isDark(row, col + 2)
+              &&  qrcode.isDark(row, col + 3)
+              &&  qrcode.isDark(row, col + 4)
+              && !qrcode.isDark(row, col + 5)
+              &&  qrcode.isDark(row, col + 6) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount - 6; row += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row + 1, col)
+              &&  qrcode.isDark(row + 2, col)
+              &&  qrcode.isDark(row + 3, col)
+              &&  qrcode.isDark(row + 4, col)
+              && !qrcode.isDark(row + 5, col)
+              &&  qrcode.isDark(row + 6, col) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      // LEVEL4
+
+      var darkCount = 0;
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount; row += 1) {
+          if (qrcode.isDark(row, col) ) {
+            darkCount += 1;
+          }
+        }
+      }
+
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+
+      return lostPoint;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // QRMath
+  //---------------------------------------------------------------------
+
+  var QRMath = function() {
+
+    var EXP_TABLE = new Array(256);
+    var LOG_TABLE = new Array(256);
+
+    // initialize tables
+    for (var i = 0; i < 8; i += 1) {
+      EXP_TABLE[i] = 1 << i;
+    }
+    for (var i = 8; i < 256; i += 1) {
+      EXP_TABLE[i] = EXP_TABLE[i - 4]
+        ^ EXP_TABLE[i - 5]
+        ^ EXP_TABLE[i - 6]
+        ^ EXP_TABLE[i - 8];
+    }
+    for (var i = 0; i < 255; i += 1) {
+      LOG_TABLE[EXP_TABLE[i] ] = i;
+    }
+
+    var _this = {};
+
+    _this.glog = function(n) {
+
+      if (n < 1) {
+        throw 'glog(' + n + ')';
+      }
+
+      return LOG_TABLE[n];
+    };
+
+    _this.gexp = function(n) {
+
+      while (n < 0) {
+        n += 255;
+      }
+
+      while (n >= 256) {
+        n -= 255;
+      }
+
+      return EXP_TABLE[n];
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrPolynomial
+  //---------------------------------------------------------------------
+
+  function qrPolynomial(num, shift) {
+
+    if (typeof num.length == 'undefined') {
+      throw num.length + '/' + shift;
+    }
+
+    var _num = function() {
+      var offset = 0;
+      while (offset < num.length && num[offset] == 0) {
+        offset += 1;
+      }
+      var _num = new Array(num.length - offset + shift);
+      for (var i = 0; i < num.length - offset; i += 1) {
+        _num[i] = num[i + offset];
+      }
+      return _num;
+    }();
+
+    var _this = {};
+
+    _this.getAt = function(index) {
+      return _num[index];
+    };
+
+    _this.getLength = function() {
+      return _num.length;
+    };
+
+    _this.multiply = function(e) {
+
+      var num = new Array(_this.getLength() + e.getLength() - 1);
+
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        for (var j = 0; j < e.getLength(); j += 1) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(_this.getAt(i) ) + QRMath.glog(e.getAt(j) ) );
+        }
+      }
+
+      return qrPolynomial(num, 0);
+    };
+
+    _this.mod = function(e) {
+
+      if (_this.getLength() - e.getLength() < 0) {
+        return _this;
+      }
+
+      var ratio = QRMath.glog(_this.getAt(0) ) - QRMath.glog(e.getAt(0) );
+
+      var num = new Array(_this.getLength() );
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        num[i] = _this.getAt(i);
+      }
+
+      for (var i = 0; i < e.getLength(); i += 1) {
+        num[i] ^= QRMath.gexp(QRMath.glog(e.getAt(i) ) + ratio);
+      }
+
+      // recursive call
+      return qrPolynomial(num, 0).mod(e);
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // QRRSBlock
+  //---------------------------------------------------------------------
+
+  var QRRSBlock = function() {
+
+    var RS_BLOCK_TABLE = [
+
+      // L
+      // M
+      // Q
+      // H
+
+      // 1
+      [1, 26, 19],
+      [1, 26, 16],
+      [1, 26, 13],
+      [1, 26, 9],
+
+      // 2
+      [1, 44, 34],
+      [1, 44, 28],
+      [1, 44, 22],
+      [1, 44, 16],
+
+      // 3
+      [1, 70, 55],
+      [1, 70, 44],
+      [2, 35, 17],
+      [2, 35, 13],
+
+      // 4
+      [1, 100, 80],
+      [2, 50, 32],
+      [2, 50, 24],
+      [4, 25, 9],
+
+      // 5
+      [1, 134, 108],
+      [2, 67, 43],
+      [2, 33, 15, 2, 34, 16],
+      [2, 33, 11, 2, 34, 12],
+
+      // 6
+      [2, 86, 68],
+      [4, 43, 27],
+      [4, 43, 19],
+      [4, 43, 15],
+
+      // 7
+      [2, 98, 78],
+      [4, 49, 31],
+      [2, 32, 14, 4, 33, 15],
+      [4, 39, 13, 1, 40, 14],
+
+      // 8
+      [2, 121, 97],
+      [2, 60, 38, 2, 61, 39],
+      [4, 40, 18, 2, 41, 19],
+      [4, 40, 14, 2, 41, 15],
+
+      // 9
+      [2, 146, 116],
+      [3, 58, 36, 2, 59, 37],
+      [4, 36, 16, 4, 37, 17],
+      [4, 36, 12, 4, 37, 13],
+
+      // 10
+      [2, 86, 68, 2, 87, 69],
+      [4, 69, 43, 1, 70, 44],
+      [6, 43, 19, 2, 44, 20],
+      [6, 43, 15, 2, 44, 16],
+
+      // 11
+      [4, 101, 81],
+      [1, 80, 50, 4, 81, 51],
+      [4, 50, 22, 4, 51, 23],
+      [3, 36, 12, 8, 37, 13],
+
+      // 12
+      [2, 116, 92, 2, 117, 93],
+      [6, 58, 36, 2, 59, 37],
+      [4, 46, 20, 6, 47, 21],
+      [7, 42, 14, 4, 43, 15],
+
+      // 13
+      [4, 133, 107],
+      [8, 59, 37, 1, 60, 38],
+      [8, 44, 20, 4, 45, 21],
+      [12, 33, 11, 4, 34, 12],
+
+      // 14
+      [3, 145, 115, 1, 146, 116],
+      [4, 64, 40, 5, 65, 41],
+      [11, 36, 16, 5, 37, 17],
+      [11, 36, 12, 5, 37, 13],
+
+      // 15
+      [5, 109, 87, 1, 110, 88],
+      [5, 65, 41, 5, 66, 42],
+      [5, 54, 24, 7, 55, 25],
+      [11, 36, 12, 7, 37, 13],
+
+      // 16
+      [5, 122, 98, 1, 123, 99],
+      [7, 73, 45, 3, 74, 46],
+      [15, 43, 19, 2, 44, 20],
+      [3, 45, 15, 13, 46, 16],
+
+      // 17
+      [1, 135, 107, 5, 136, 108],
+      [10, 74, 46, 1, 75, 47],
+      [1, 50, 22, 15, 51, 23],
+      [2, 42, 14, 17, 43, 15],
+
+      // 18
+      [5, 150, 120, 1, 151, 121],
+      [9, 69, 43, 4, 70, 44],
+      [17, 50, 22, 1, 51, 23],
+      [2, 42, 14, 19, 43, 15],
+
+      // 19
+      [3, 141, 113, 4, 142, 114],
+      [3, 70, 44, 11, 71, 45],
+      [17, 47, 21, 4, 48, 22],
+      [9, 39, 13, 16, 40, 14],
+
+      // 20
+      [3, 135, 107, 5, 136, 108],
+      [3, 67, 41, 13, 68, 42],
+      [15, 54, 24, 5, 55, 25],
+      [15, 43, 15, 10, 44, 16],
+
+      // 21
+      [4, 144, 116, 4, 145, 117],
+      [17, 68, 42],
+      [17, 50, 22, 6, 51, 23],
+      [19, 46, 16, 6, 47, 17],
+
+      // 22
+      [2, 139, 111, 7, 140, 112],
+      [17, 74, 46],
+      [7, 54, 24, 16, 55, 25],
+      [34, 37, 13],
+
+      // 23
+      [4, 151, 121, 5, 152, 122],
+      [4, 75, 47, 14, 76, 48],
+      [11, 54, 24, 14, 55, 25],
+      [16, 45, 15, 14, 46, 16],
+
+      // 24
+      [6, 147, 117, 4, 148, 118],
+      [6, 73, 45, 14, 74, 46],
+      [11, 54, 24, 16, 55, 25],
+      [30, 46, 16, 2, 47, 17],
+
+      // 25
+      [8, 132, 106, 4, 133, 107],
+      [8, 75, 47, 13, 76, 48],
+      [7, 54, 24, 22, 55, 25],
+      [22, 45, 15, 13, 46, 16],
+
+      // 26
+      [10, 142, 114, 2, 143, 115],
+      [19, 74, 46, 4, 75, 47],
+      [28, 50, 22, 6, 51, 23],
+      [33, 46, 16, 4, 47, 17],
+
+      // 27
+      [8, 152, 122, 4, 153, 123],
+      [22, 73, 45, 3, 74, 46],
+      [8, 53, 23, 26, 54, 24],
+      [12, 45, 15, 28, 46, 16],
+
+      // 28
+      [3, 147, 117, 10, 148, 118],
+      [3, 73, 45, 23, 74, 46],
+      [4, 54, 24, 31, 55, 25],
+      [11, 45, 15, 31, 46, 16],
+
+      // 29
+      [7, 146, 116, 7, 147, 117],
+      [21, 73, 45, 7, 74, 46],
+      [1, 53, 23, 37, 54, 24],
+      [19, 45, 15, 26, 46, 16],
+
+      // 30
+      [5, 145, 115, 10, 146, 116],
+      [19, 75, 47, 10, 76, 48],
+      [15, 54, 24, 25, 55, 25],
+      [23, 45, 15, 25, 46, 16],
+
+      // 31
+      [13, 145, 115, 3, 146, 116],
+      [2, 74, 46, 29, 75, 47],
+      [42, 54, 24, 1, 55, 25],
+      [23, 45, 15, 28, 46, 16],
+
+      // 32
+      [17, 145, 115],
+      [10, 74, 46, 23, 75, 47],
+      [10, 54, 24, 35, 55, 25],
+      [19, 45, 15, 35, 46, 16],
+
+      // 33
+      [17, 145, 115, 1, 146, 116],
+      [14, 74, 46, 21, 75, 47],
+      [29, 54, 24, 19, 55, 25],
+      [11, 45, 15, 46, 46, 16],
+
+      // 34
+      [13, 145, 115, 6, 146, 116],
+      [14, 74, 46, 23, 75, 47],
+      [44, 54, 24, 7, 55, 25],
+      [59, 46, 16, 1, 47, 17],
+
+      // 35
+      [12, 151, 121, 7, 152, 122],
+      [12, 75, 47, 26, 76, 48],
+      [39, 54, 24, 14, 55, 25],
+      [22, 45, 15, 41, 46, 16],
+
+      // 36
+      [6, 151, 121, 14, 152, 122],
+      [6, 75, 47, 34, 76, 48],
+      [46, 54, 24, 10, 55, 25],
+      [2, 45, 15, 64, 46, 16],
+
+      // 37
+      [17, 152, 122, 4, 153, 123],
+      [29, 74, 46, 14, 75, 47],
+      [49, 54, 24, 10, 55, 25],
+      [24, 45, 15, 46, 46, 16],
+
+      // 38
+      [4, 152, 122, 18, 153, 123],
+      [13, 74, 46, 32, 75, 47],
+      [48, 54, 24, 14, 55, 25],
+      [42, 45, 15, 32, 46, 16],
+
+      // 39
+      [20, 147, 117, 4, 148, 118],
+      [40, 75, 47, 7, 76, 48],
+      [43, 54, 24, 22, 55, 25],
+      [10, 45, 15, 67, 46, 16],
+
+      // 40
+      [19, 148, 118, 6, 149, 119],
+      [18, 75, 47, 31, 76, 48],
+      [34, 54, 24, 34, 55, 25],
+      [20, 45, 15, 61, 46, 16]
+    ];
+
+    var qrRSBlock = function(totalCount, dataCount) {
+      var _this = {};
+      _this.totalCount = totalCount;
+      _this.dataCount = dataCount;
+      return _this;
+    };
+
+    var _this = {};
+
+    var getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+
+      switch(errorCorrectionLevel) {
+      case QRErrorCorrectionLevel.L :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case QRErrorCorrectionLevel.M :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case QRErrorCorrectionLevel.Q :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case QRErrorCorrectionLevel.H :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default :
+        return undefined;
+      }
+    };
+
+    _this.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+
+      var rsBlock = getRsBlockTable(typeNumber, errorCorrectionLevel);
+
+      if (typeof rsBlock == 'undefined') {
+        throw 'bad rs block @ typeNumber:' + typeNumber +
+            '/errorCorrectionLevel:' + errorCorrectionLevel;
+      }
+
+      var length = rsBlock.length / 3;
+
+      var list = [];
+
+      for (var i = 0; i < length; i += 1) {
+
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+
+        for (var j = 0; j < count; j += 1) {
+          list.push(qrRSBlock(totalCount, dataCount) );
+        }
+      }
+
+      return list;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrBitBuffer
+  //---------------------------------------------------------------------
+
+  var qrBitBuffer = function() {
+
+    var _buffer = [];
+    var _length = 0;
+
+    var _this = {};
+
+    _this.getBuffer = function() {
+      return _buffer;
+    };
+
+    _this.getAt = function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+    };
+
+    _this.put = function(num, length) {
+      for (var i = 0; i < length; i += 1) {
+        _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+      }
+    };
+
+    _this.getLengthInBits = function() {
+      return _length;
+    };
+
+    _this.putBit = function(bit) {
+
+      var bufIndex = Math.floor(_length / 8);
+      if (_buffer.length <= bufIndex) {
+        _buffer.push(0);
+      }
+
+      if (bit) {
+        _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+      }
+
+      _length += 1;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrNumber
+  //---------------------------------------------------------------------
+
+  var qrNumber = function(data) {
+
+    var _mode = QRMode.MODE_NUMBER;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _data;
+
+      var i = 0;
+
+      while (i + 2 < data.length) {
+        buffer.put(strToNum(data.substring(i, i + 3) ), 10);
+        i += 3;
+      }
+
+      if (i < data.length) {
+        if (data.length - i == 1) {
+          buffer.put(strToNum(data.substring(i, i + 1) ), 4);
+        } else if (data.length - i == 2) {
+          buffer.put(strToNum(data.substring(i, i + 2) ), 7);
+        }
+      }
+    };
+
+    var strToNum = function(s) {
+      var num = 0;
+      for (var i = 0; i < s.length; i += 1) {
+        num = num * 10 + chatToNum(s.charAt(i) );
+      }
+      return num;
+    };
+
+    var chatToNum = function(c) {
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      }
+      throw 'illegal char :' + c;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrAlphaNum
+  //---------------------------------------------------------------------
+
+  var qrAlphaNum = function(data) {
+
+    var _mode = QRMode.MODE_ALPHA_NUM;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var s = _data;
+
+      var i = 0;
+
+      while (i + 1 < s.length) {
+        buffer.put(
+          getCode(s.charAt(i) ) * 45 +
+          getCode(s.charAt(i + 1) ), 11);
+        i += 2;
+      }
+
+      if (i < s.length) {
+        buffer.put(getCode(s.charAt(i) ), 6);
+      }
+    };
+
+    var getCode = function(c) {
+
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      } else if ('A' <= c && c <= 'Z') {
+        return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+      } else {
+        switch (c) {
+        case ' ' : return 36;
+        case '$' : return 37;
+        case '%' : return 38;
+        case '*' : return 39;
+        case '+' : return 40;
+        case '-' : return 41;
+        case '.' : return 42;
+        case '/' : return 43;
+        case ':' : return 44;
+        default :
+          throw 'illegal char :' + c;
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qr8BitByte
+  //---------------------------------------------------------------------
+
+  var qr8BitByte = function(data) {
+
+    var _mode = QRMode.MODE_8BIT_BYTE;
+    var _data = data;
+    var _bytes = qrcode.stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _bytes.length;
+    };
+
+    _this.write = function(buffer) {
+      for (var i = 0; i < _bytes.length; i += 1) {
+        buffer.put(_bytes[i], 8);
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrKanji
+  //---------------------------------------------------------------------
+
+  var qrKanji = function(data) {
+
+    var _mode = QRMode.MODE_KANJI;
+    var _data = data;
+
+    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
+    if (!stringToBytes) {
+      throw 'sjis not supported.';
+    }
+    !function(c, code) {
+      // self test for sjis support.
+      var test = stringToBytes(c);
+      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
+        throw 'sjis not supported.';
+      }
+    }('\u53cb', 0x9746);
+
+    var _bytes = stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return ~~(_bytes.length / 2);
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _bytes;
+
+      var i = 0;
+
+      while (i + 1 < data.length) {
+
+        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
+
+        if (0x8140 <= c && c <= 0x9FFC) {
+          c -= 0x8140;
+        } else if (0xE040 <= c && c <= 0xEBBF) {
+          c -= 0xC140;
+        } else {
+          throw 'illegal char at ' + (i + 1) + '/' + c;
+        }
+
+        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
+
+        buffer.put(c, 13);
+
+        i += 2;
+      }
+
+      if (i < data.length) {
+        throw 'illegal char at ' + (i + 1);
+      }
+    };
+
+    return _this;
+  };
+
+  //=====================================================================
+  // GIF Support etc.
+  //
+
+  //---------------------------------------------------------------------
+  // byteArrayOutputStream
+  //---------------------------------------------------------------------
+
+  var byteArrayOutputStream = function() {
+
+    var _bytes = [];
+
+    var _this = {};
+
+    _this.writeByte = function(b) {
+      _bytes.push(b & 0xff);
+    };
+
+    _this.writeShort = function(i) {
+      _this.writeByte(i);
+      _this.writeByte(i >>> 8);
+    };
+
+    _this.writeBytes = function(b, off, len) {
+      off = off || 0;
+      len = len || b.length;
+      for (var i = 0; i < len; i += 1) {
+        _this.writeByte(b[i + off]);
+      }
+    };
+
+    _this.writeString = function(s) {
+      for (var i = 0; i < s.length; i += 1) {
+        _this.writeByte(s.charCodeAt(i) );
+      }
+    };
+
+    _this.toByteArray = function() {
+      return _bytes;
+    };
+
+    _this.toString = function() {
+      var s = '';
+      s += '[';
+      for (var i = 0; i < _bytes.length; i += 1) {
+        if (i > 0) {
+          s += ',';
+        }
+        s += _bytes[i];
+      }
+      s += ']';
+      return s;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64EncodeOutputStream
+  //---------------------------------------------------------------------
+
+  var base64EncodeOutputStream = function() {
+
+    var _buffer = 0;
+    var _buflen = 0;
+    var _length = 0;
+    var _base64 = '';
+
+    var _this = {};
+
+    var writeEncoded = function(b) {
+      _base64 += String.fromCharCode(encode(b & 0x3f) );
+    };
+
+    var encode = function(n) {
+      if (n < 0) {
+        // error.
+      } else if (n < 26) {
+        return 0x41 + n;
+      } else if (n < 52) {
+        return 0x61 + (n - 26);
+      } else if (n < 62) {
+        return 0x30 + (n - 52);
+      } else if (n == 62) {
+        return 0x2b;
+      } else if (n == 63) {
+        return 0x2f;
+      }
+      throw 'n:' + n;
+    };
+
+    _this.writeByte = function(n) {
+
+      _buffer = (_buffer << 8) | (n & 0xff);
+      _buflen += 8;
+      _length += 1;
+
+      while (_buflen >= 6) {
+        writeEncoded(_buffer >>> (_buflen - 6) );
+        _buflen -= 6;
+      }
+    };
+
+    _this.flush = function() {
+
+      if (_buflen > 0) {
+        writeEncoded(_buffer << (6 - _buflen) );
+        _buffer = 0;
+        _buflen = 0;
+      }
+
+      if (_length % 3 != 0) {
+        // padding
+        var padlen = 3 - _length % 3;
+        for (var i = 0; i < padlen; i += 1) {
+          _base64 += '=';
+        }
+      }
+    };
+
+    _this.toString = function() {
+      return _base64;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64DecodeInputStream
+  //---------------------------------------------------------------------
+
+  var base64DecodeInputStream = function(str) {
+
+    var _str = str;
+    var _pos = 0;
+    var _buffer = 0;
+    var _buflen = 0;
+
+    var _this = {};
+
+    _this.read = function() {
+
+      while (_buflen < 8) {
+
+        if (_pos >= _str.length) {
+          if (_buflen == 0) {
+            return -1;
+          }
+          throw 'unexpected end of file./' + _buflen;
+        }
+
+        var c = _str.charAt(_pos);
+        _pos += 1;
+
+        if (c == '=') {
+          _buflen = 0;
+          return -1;
+        } else if (c.match(/^\s$/) ) {
+          // ignore if whitespace.
+          continue;
+        }
+
+        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+        _buflen += 6;
+      }
+
+      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+      _buflen -= 8;
+      return n;
+    };
+
+    var decode = function(c) {
+      if (0x41 <= c && c <= 0x5a) {
+        return c - 0x41;
+      } else if (0x61 <= c && c <= 0x7a) {
+        return c - 0x61 + 26;
+      } else if (0x30 <= c && c <= 0x39) {
+        return c - 0x30 + 52;
+      } else if (c == 0x2b) {
+        return 62;
+      } else if (c == 0x2f) {
+        return 63;
+      } else {
+        throw 'c:' + c;
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // gifImage (B/W)
+  //---------------------------------------------------------------------
+
+  var gifImage = function(width, height) {
+
+    var _width = width;
+    var _height = height;
+    var _data = new Array(width * height);
+
+    var _this = {};
+
+    _this.setPixel = function(x, y, pixel) {
+      _data[y * _width + x] = pixel;
+    };
+
+    _this.write = function(out) {
+
+      //---------------------------------
+      // GIF Signature
+
+      out.writeString('GIF87a');
+
+      //---------------------------------
+      // Screen Descriptor
+
+      out.writeShort(_width);
+      out.writeShort(_height);
+
+      out.writeByte(0x80); // 2bit
+      out.writeByte(0);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Global Color Map
+
+      // black
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+
+      // white
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+
+      //---------------------------------
+      // Image Descriptor
+
+      out.writeString(',');
+      out.writeShort(0);
+      out.writeShort(0);
+      out.writeShort(_width);
+      out.writeShort(_height);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Local Color Map
+
+      //---------------------------------
+      // Raster Data
+
+      var lzwMinCodeSize = 2;
+      var raster = getLZWRaster(lzwMinCodeSize);
+
+      out.writeByte(lzwMinCodeSize);
+
+      var offset = 0;
+
+      while (raster.length - offset > 255) {
+        out.writeByte(255);
+        out.writeBytes(raster, offset, 255);
+        offset += 255;
+      }
+
+      out.writeByte(raster.length - offset);
+      out.writeBytes(raster, offset, raster.length - offset);
+      out.writeByte(0x00);
+
+      //---------------------------------
+      // GIF Terminator
+      out.writeString(';');
+    };
+
+    var bitOutputStream = function(out) {
+
+      var _out = out;
+      var _bitLength = 0;
+      var _bitBuffer = 0;
+
+      var _this = {};
+
+      _this.write = function(data, length) {
+
+        if ( (data >>> length) != 0) {
+          throw 'length over';
+        }
+
+        while (_bitLength + length >= 8) {
+          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+          length -= (8 - _bitLength);
+          data >>>= (8 - _bitLength);
+          _bitBuffer = 0;
+          _bitLength = 0;
+        }
+
+        _bitBuffer = (data << _bitLength) | _bitBuffer;
+        _bitLength = _bitLength + length;
+      };
+
+      _this.flush = function() {
+        if (_bitLength > 0) {
+          _out.writeByte(_bitBuffer);
+        }
+      };
+
+      return _this;
+    };
+
+    var getLZWRaster = function(lzwMinCodeSize) {
+
+      var clearCode = 1 << lzwMinCodeSize;
+      var endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+
+      // Setup LZWTable
+      var table = lzwTable();
+
+      for (var i = 0; i < clearCode; i += 1) {
+        table.add(String.fromCharCode(i) );
+      }
+      table.add(String.fromCharCode(clearCode) );
+      table.add(String.fromCharCode(endCode) );
+
+      var byteOut = byteArrayOutputStream();
+      var bitOut = bitOutputStream(byteOut);
+
+      // clear code
+      bitOut.write(clearCode, bitLength);
+
+      var dataIndex = 0;
+
+      var s = String.fromCharCode(_data[dataIndex]);
+      dataIndex += 1;
+
+      while (dataIndex < _data.length) {
+
+        var c = String.fromCharCode(_data[dataIndex]);
+        dataIndex += 1;
+
+        if (table.contains(s + c) ) {
+
+          s = s + c;
+
+        } else {
+
+          bitOut.write(table.indexOf(s), bitLength);
+
+          if (table.size() < 0xfff) {
+
+            if (table.size() == (1 << bitLength) ) {
+              bitLength += 1;
+            }
+
+            table.add(s + c);
+          }
+
+          s = c;
+        }
+      }
+
+      bitOut.write(table.indexOf(s), bitLength);
+
+      // end code
+      bitOut.write(endCode, bitLength);
+
+      bitOut.flush();
+
+      return byteOut.toByteArray();
+    };
+
+    var lzwTable = function() {
+
+      var _map = {};
+      var _size = 0;
+
+      var _this = {};
+
+      _this.add = function(key) {
+        if (_this.contains(key) ) {
+          throw 'dup key:' + key;
+        }
+        _map[key] = _size;
+        _size += 1;
+      };
+
+      _this.size = function() {
+        return _size;
+      };
+
+      _this.indexOf = function(key) {
+        return _map[key];
+      };
+
+      _this.contains = function(key) {
+        return typeof _map[key] != 'undefined';
+      };
+
+      return _this;
+    };
+
+    return _this;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var gif = gifImage(width, height);
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        gif.setPixel(x, y, getPixel(x, y) );
+      }
+    }
+
+    var b = byteArrayOutputStream();
+    gif.write(b);
+
+    var base64 = base64EncodeOutputStream();
+    var bytes = b.toByteArray();
+    for (var i = 0; i < bytes.length; i += 1) {
+      base64.writeByte(bytes[i]);
+    }
+    base64.flush();
+
+    return 'data:image/gif;base64,' + base64;
+  };
+
+  //---------------------------------------------------------------------
+  // returns qrcode function.
+
+  return qrcode;
+}();
+
+// multibyte support
+!function() {
+
+  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
+    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+    function toUTF8Array(str) {
+      var utf8 = [];
+      for (var i=0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+          utf8.push(0xc0 | (charcode >> 6),
+              0x80 | (charcode & 0x3f));
+        }
+        else if (charcode < 0xd800 || charcode >= 0xe000) {
+          utf8.push(0xe0 | (charcode >> 12),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+        // surrogate pair
+        else {
+          i++;
+          // UTF-16 encodes 0x10000-0x10FFFF by
+          // subtracting 0x10000 and splitting the
+          // 20 bits of 0x0-0xFFFFF into two halves
+          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+            | (str.charCodeAt(i) & 0x3ff));
+          utf8.push(0xf0 | (charcode >>18),
+              0x80 | ((charcode>>12) & 0x3f),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+      }
+      return utf8;
+    }
+    return toUTF8Array(s);
+  };
+
+}();
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+      define([], factory);
+  } else if (typeof exports === 'object') {
+      module.exports = factory();
+  }
+}(function () {
+    return qrcode;
+}));
+</script>
 <script>'use strict';
 (function(){
-const VERSION='1.4.0';
+const VERSION='1.5.0';
 const CAP=window.capacitorExports||null;
 const NATIVE=!!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform());
 const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications')}:{};
@@ -1090,7 +3538,7 @@ const store={
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},
   del(k){try{localStorage.removeItem(k)}catch(e){}}
 };
-const K={courses:'oguide.courses.v1',settings:'oguide.settings.v1',draft:'oguide.draft.v1',results:'oguide.results.v1'};
+const K={courses:'oguide.courses.v1',settings:'oguide.settings.v1',draft:'oguide.draft.v1',results:'oguide.results.v1',me:'oguide.me.v1',orgs:'oguide.orgs.v1',follow:'oguide.follow.v1',active:'oguide.active.v1'};
 const DEFAULTS={profile:'blind',voiceMode:'app',interval:30,zoneInterval:15,dirFormat:'clock',headingRef:'auto',rate:1,beep:true,approachDist:50,stereo:false,radius:10,vibrate:true,layer:'ign',contrast:'high',mapStyle:'paths-light',showRoute:false,showMe:true,showDone:false,avgSeconds:5,recordTrack:true,sim:false,_v:3};
 let settings=Object.assign({},DEFAULTS,store.get(K.settings,{}));
 const saveSettings=()=>store.set(K.settings,settings);
@@ -1181,7 +3629,7 @@ const Wake={lock:null,want:false,
   async on(){this.want=true;if(NATIVE){P.awake.keepAwake().catch(()=>{});return}try{if('wakeLock' in navigator&&!this.lock){this.lock=await navigator.wakeLock.request('screen');this.lock.addEventListener('release',()=>{this.lock=null})}}catch(e){}},
   off(){this.want=false;if(NATIVE){P.awake.allowSleep().catch(()=>{});return}try{if(this.lock)this.lock.release()}catch(e){}this.lock=null}
 };
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(Wake.want&&!NATIVE)Wake.on();if(current==='run'&&!NATIVE)Run.onResumeVisible()}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(Wake.want&&!NATIVE)Wake.on();if(current==='run'&&!NATIVE)Run.onResumeVisible();if(current==='run')Run.publish(true);if(current==='follow')Follow.onResumeVisible()}});
 
 /* ---------------- GPS ---------------- */
 const GPS={id:null,last:null,lastErrT:0,subs:new Set(),simPos:null,simTimer:null,simHead:null,simMoveT:0,
@@ -1309,13 +3757,13 @@ const LAYERS={
 const allMaps=[];
 function makeMap(el,kind){const m=L.map(el,{zoomControl:true,attributionControl:true,maxZoom:20});m._kind=kind||'map';m.createPane('paths').style.zIndex=350;
   m.attributionControl.setPrefix(false);m.setView([43.9493,4.8055],15);setMapStyle(m);allMaps.push(m);return m}
-const mapStyleOf=m=>m._kind==='create'?'map':settings.mapStyle;
+const mapStyleOf=m=>(m._kind==='create'||m._kind==='org')?'map':settings.mapStyle;
 function setMapStyle(m){
   const st=mapStyleOf(m),c=m.getContainer();c.classList.remove('ct-normal','ct-high','ct-invert','ms-light','ms-dark');
   if(m._base){m.removeLayer(m._base);m._base=null}
   if(st==='paths-dark'){c.classList.add('ms-dark');return}
   const ly=LAYERS[settings.layer]||LAYERS.osm;m._base=L.tileLayer(ly.url,ly.o).addTo(m);
-  c.classList.add(st==='paths-light'?'ms-light':'ct-'+settings.contrast);
+  c.classList.add(st==='paths-light'?'ms-light':'ct-'+(m._kind==='org'?'normal':settings.contrast));
 }
 function ctrlIcon(pts,i,{size=40,cls=''}={}){
   const p=pts[i],s=size;let svg;
@@ -1488,8 +3936,8 @@ function download(name,text,mime){
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);
 }
 async function nativeWrite(directory,path,text){const r=await P.fs.writeFile({path,data:text,directory,encoding:'utf8',recursive:true});return r.uri}
-async function saveFile(name,text){
-  if(!NATIVE){download(name,text,'application/gpx+xml');toast('GPX téléchargé');return}
+async function saveFile(name,text,mime){
+  if(!NATIVE){download(name,text,mime||'application/gpx+xml');toast((/csv/.test(mime||'')?'Fichier CSV':'GPX')+' téléchargé');return}
   try{await nativeWrite('DOCUMENTS','OGuide/'+name,text);toast('Enregistré dans Documents › OGuide : '+name)}
   catch(e){toast('Enregistrement impossible ici : utilise « Partager ».',true)}
 }
@@ -1509,8 +3957,8 @@ async function shareFile(name,text){
 
 /* ---------------- Navigation ---------------- */
 let current='home';
-const PARENT={create:'home',library:'home',detail:'library',setup:'home',results:'home',help:'home',run:'home'};
-const leaveHooks={create:()=>Create.close(),detail:()=>Lib.leaveDetail()};
+const PARENT={create:'home',library:'home',detail:'library',setup:'home',results:'home',help:'home',run:'home',join:'home',orgsetup:'detail',org:'home',follow:'home'};
+const leaveHooks={create:()=>Create.close(),detail:()=>Lib.leaveDetail(),org:()=>Org.leave(),join:()=>Join.leave()};
 function show(id){
   if(id===current)return;
   if(leaveHooks[current])leaveHooks[current]();
@@ -1523,7 +3971,10 @@ function show(id){
 window.addEventListener('popstate',()=>{
   if(current==='home')return;
   try{history.pushState({s:current},'')}catch(e){}
+  if(Sheet.open){Sheet.hide();return}
   if(current==='run'){if(RunOpts.open)RunOpts.hide();else if(!Lock.on)Run.askQuit();return}
+  if(current==='follow'&&Follow.on){toast('Le suivi continue. Pour l\'arrêter : appui long sur « Arrêter le suivi ».');Voice.say('Le suivi continue.');return}
+  if(current==='orgsetup'&&Lib.cur){Lib.openDetail(Lib.cur.id);return}
   if(current==='create'){Create.askBack();return}
   if(current==='setup'){Setup.back();return}
   const par=PARENT[current]||'home';if(par==='library')Lib.open();else show(par);
@@ -1539,12 +3990,22 @@ const Home={deferred:null,
     if(!NATIVE&&!window.isSecureContext)w.push('Le GPS ne fonctionne que si l\'appli est ouverte en <b>https</b>.');
     if(!NATIVE&&!('speechSynthesis' in window))w.push('Synthèse vocale indisponible dans ce navigateur : utilise Chrome (Android) ou Safari (iPhone).');
     $('#homeWarn').innerHTML=w.map(x=>`<div class="warnbox">${x}</div>`).join('')+(IOS&&!STANDALONE&&!NATIVE?`<div class="ioshint">📲 Sur iPhone : touche <span class="shr">Partager ⬆︎</span> en bas de Safari, puis « Sur l'écran d'accueil ». O'Guide s'ouvrira ensuite comme une appli, en plein écran et même sans réseau.</div>`:'');
+    const act=store.get(K.active,null),fw=store.get(K.follow,null),orgs=store.get(K.orgs,[]);let h='';
+    if(fw)h+=`<button class="primary big" id="hFollow">📍 Suivi en cours : ${esc(fw.sname||'')}</button>`;
+    if(act)h+=`<button class="primary big" id="hResume">⏯ Reprendre l'épreuve : ${esc(act.course.name)}</button>`;
+    if(orgs.length)h+=`<section class="card"><h2>Courses et séances organisées</h2>${orgs.slice(-5).reverse().map(o=>`<button type="button" data-org="${o.code}" style="justify-content:space-between"><span>${o.kind==='train'?'📍':'📡'} ${esc(o.name)}</span><span class="muted">${Org.statusLabel(o.status,o.kind)} · ${new Date(o.created).toLocaleDateString('fr-FR')}</span></button>`).join('')}</section>`;
+    $('#homeExtra').innerHTML=h;
+    const hr=$('#hResume');if(hr)hr.onclick=()=>Run.resumeActive();
+    const hf=$('#hFollow');if(hf)hf.onclick=()=>Follow.resume();
     $('#hVersion').textContent='Version '+VERSION+(NATIVE?' · application Android':' · fonctionne hors connexion une fois installée');
   }
 };
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();Home.deferred=e;$('#hInstall').hidden=false});
 $('#hInstall').onclick=async()=>{if(!Home.deferred)return;Home.deferred.prompt();try{await Home.deferred.userChoice}catch(e){}Home.deferred=null;$('#hInstall').hidden=true};
 $('#hCreate').onclick=()=>Create.begin();
+$('#hJoin').onclick=()=>Join.open();
+$('#hOrg').onclick=()=>{if(!courses.length){toast('Crée ou importe d\'abord un parcours.',true);return}Lib.open(true)};
+$('#homeExtra').addEventListener('click',e=>{const b=e.target.closest('[data-org]');if(b)Org.resume(b.dataset.org)});
 $('#hLib').onclick=()=>Lib.open();
 $('#hImport').onclick=$('#libImport').onclick=()=>{$('#gpxInput').value='';$('#gpxInput').click()};
 $('#hSettings').onclick=()=>Setup.open(null);
@@ -1683,10 +4144,10 @@ $('#crList').addEventListener('click',e=>{const b=e.target.closest('[data-del]')
 
 /* ---------------- Bibliothèque & détail ---------------- */
 const Lib={map:null,lay:null,cur:null,editing:false,
-  open(){
-    show('library');
+  open(forOrg){
+    show('library');this.forOrg=!!forOrg;$('#libTitle').textContent=forOrg?'Organiser : choisis un parcours':'Mes parcours';
     const L0=courses.slice().reverse();
-    $('#libList').innerHTML=L0.length?L0.map(c=>`<li><button type="button" class="card-btn" data-open="${c.id}"><b>${esc(c.name)}</b><span>${nControls(c.points)} balises · ${fmtDist(courseLength(c.points))} · ${new Date(c.created).toLocaleDateString('fr-FR')}${c.imported?' · importé':''}</span></button><button type="button" class="play" data-run="${c.id}" aria-label="Faire le parcours ${esc(c.name)}">▶</button></li>`).join('')
+    $('#libList').innerHTML=L0.length?L0.map(c=>`<li><button type="button" class="card-btn" data-open="${c.id}"><b>${esc(c.name)}</b><span>${nControls(c.points)} balises · ${fmtDist(courseLength(c.points))} · ${new Date(c.created).toLocaleDateString('fr-FR')}${c.imported?' · importé':''}</span></button><button type="button" class="play" ${forOrg?`data-org="${c.id}" aria-label="Organiser une course avec ${esc(c.name)}">📡`:`data-run="${c.id}" aria-label="Faire le parcours ${esc(c.name)}">▶`}</button></li>`).join('')
       :'<li class="hint">Aucun parcours pour l\'instant. Crée-en un ou importe un fichier GPX.</li>';
   },
   openDetail(id){
@@ -1724,8 +4185,9 @@ const Lib={map:null,lay:null,cur:null,editing:false,
     $('#dtEditHint').hidden=!this.editing;
   }
 };
-$('#libList').addEventListener('click',e=>{const o=e.target.closest('[data-open]');if(o){Lib.openDetail(o.dataset.open);return}const r=e.target.closest('[data-run]');if(r)Setup.open(r.dataset.run)});
+$('#libList').addEventListener('click',e=>{const g=e.target.closest('[data-org]');if(g){const c=courses.find(x=>x.id===g.dataset.org);if(c){Lib.cur=c;OrgSetup.open(c)}return}const o=e.target.closest('[data-open]');if(o){if(Lib.forOrg){const c=courses.find(x=>x.id===o.dataset.open);if(c){Lib.cur=c;OrgSetup.open(c)}return}Lib.openDetail(o.dataset.open);return}const r=e.target.closest('[data-run]');if(r)Setup.open(r.dataset.run)});
 $('#dtRun').onclick=()=>Setup.open(Lib.cur.id);
+$('#dtOrg').onclick=()=>OrgSetup.open(Lib.cur);
 $('#dtShare').onclick=()=>shareFile(slug(Lib.cur.name)+'.gpx',courseToGPX(Lib.cur));
 $('#dtDownload').onclick=()=>saveFile(slug(Lib.cur.name)+'.gpx',courseToGPX(Lib.cur));
 $('#dtPathsBtn').onclick=async()=>{const c=Lib.cur,b=$('#dtPathsBtn');b.disabled=true;b.textContent='⏳ Téléchargement…';
@@ -1781,21 +4243,29 @@ $('#testVoice').onclick=()=>{Snd.unlock();Voice.unlock();const m=settings.voiceM
 $('#testBeep').onclick=async()=>{Snd.unlock();for(let i=0;i<14;i++){const k=1-i/13;Snd.tone(1500-k*900,0.08,{vol:0.5});await sleep(180+k*1100)}Snd.chime();vib([200,100,200])};
 $('#compassBtn').onclick=async()=>{const ok=await Compass.enable();if(!ok)toast('Boussole refusée ou indisponible sur cet appareil',true);setTimeout(()=>Setup.compassUI(),800)};
 Compass.onChange=()=>{if(current==='setup'||RunOpts.open)Setup.compassUI();if(current==='run')Run.renderDir()};
-$('#startRun').onclick=()=>{
-  Snd.unlock();Voice.unlock();Compass.enable();
+$('#startRun').onclick=async()=>{
+  Snd.unlock();Voice.unlock();if(!await Run.checkActive())return;Compass.enable();
   if(settings.voiceMode==='app'&&!NATIVE&&!('speechSynthesis' in window))toast('Synthèse vocale indisponible ici',true);
   Run.open(Setup.course,$('#partName').value.trim());
 };
 
 /* ---------------- Épreuve ---------------- */
 const Run={map:null,lay:null,
-  open(course,participant){
-    Object.assign(this,{c:course,pts:course.points,idx:0,participant,splits:[],track:[],t0:null,pausedAt:null,pausedTotal:0,lastAnn:0,lastAnnDist:null,inZone:false,insideSince:null,
-      lastFixT:Date.now(),lostSaid:false,ended:false,d:null,b:null,follow:true,lastFit:0,id:uid(),date:new Date().toISOString(),meM:null,accC:null,line:null,
+  open(course,participant,ctx={}){
+    const rs=ctx.resume||null,link=ctx.race||null,rinfo=link&&link.race?{code:link.code,opts:link.race.opts||{}}:rs&&rs.race?rs.race:null;
+    if(this.link&&this.link!==link){try{this.link.close()}catch(e){}}
+    Object.assign(this,{c:course,pts:course.points,idx:rs?rs.idx:0,participant,splits:rs?rs.splits:[],track:rs?rs.track||[]:[],t0:rs?rs.t0:null,pausedAt:null,pausedTotal:rs?rs.pausedTotal||0:0,lastAnn:0,lastAnnDist:null,inZone:false,insideSince:null,
+      link,race:rinfo?{code:rinfo.code,opts:Object.assign({startType:'individual',radius:10},rinfo.opts)}:null,pid:rs&&rs.pid||uid(),finishAt:null,rstatus:null,lastPub:0,lastTrk:0,lastSave:0,waiting:false,
+      lastFixT:Date.now(),lostSaid:false,ended:false,d:null,b:null,follow:true,lastFit:0,id:rs?rs.id:uid(),date:rs?rs.date:new Date().toISOString(),meM:null,accC:null,line:null,
       route:null,lastRouteT:0,pathsDrawn:false,routeLine:null,routeCase:null});
     $('#runRoute').textContent='';
     if(this.lay)this.lay.clearLayers();
-    if(this.pts[0].type!=='start')this.t0=Date.now();
+    if(this.link)this.link.onRace=r=>this.onRace(r);
+    const lr=link&&link.race;
+    if(this.race&&this.race.opts.startType==='mass'&&!this.t0){if(lr&&lr.status==='started')this.t0=lr.startAt||Date.now();else this.waiting=true}
+    if(!rs&&!this.waiting&&!this.t0&&this.pts[0].type!=='start')this.t0=Date.now();
+    if(!rs&&lr&&lr.status==='started'&&this.race.opts.startType==='mass'&&this.pts[0].type==='start'){this.splits.push({id:this.pts[0].id,name:this.pts[0].name,type:'start',elapsed:0,leg:0,mode:'auto',lat:this.pts[0].lat,lon:this.pts[0].lon,time:new Date(this.t0).toISOString()});this.idx=1}
+    $('#runPause').hidden=!!this.race;
     $('#runPause').classList.remove('paused');$('#runPause').innerHTML='⏸ Pause';$('#runMsg').textContent='';
     $('#runValidate').hidden=false;
     show('run');
@@ -1806,11 +4276,51 @@ const Run={map:null,lay:null,
     clearInterval(this.tickI);this.tickI=setInterval(()=>this.tick(),1000);
     this.beepLoop();
     const nc=nControls(this.pts);
-    const intro=`Parcours ${this.c.name}. ${nc} balise${nc>1?'s':''}. `+(this.t0?'Chrono lancé. ':'Rendez-vous d\'abord au départ. ');
+    const intro=rs?'Épreuve reprise. ':`${this.race?'Course':'Parcours'} ${this.c.name}. ${nc} balise${nc>1?'s':''}. `+(this.waiting?'En attente du départ donné par l\'organisateur. ':this.t0?'Chrono lancé. ':'Rendez-vous d\'abord au départ. ');
     if(GPS.last)this.compute(GPS.last);
-    this.render();
+    this.render();this.save();this.publish(true);
     setTimeout(()=>this.announce(intro+this.guidance()),300);
+    if(lr)this.onRace(lr);
   },
+  /* course organisée : rayon fixé par l'organisateur ; position sur la carte malvoyant selon ses règles */
+  rad(){return this.race&&this.race.opts.radius?this.race.opts.radius:settings.radius},
+  showMe(){return settings.showMe&&(!this.race||this.waiting||this.race.opts.showMe!==false)},
+  onRace(r){
+    if(this.ended||!r)return;
+    if(this.waiting&&r.status==='started'){
+      this.waiting=false;this.t0=r.startAt||Date.now();Snd.fanfare();vib([300,100,300]);toast('🏁 Départ donné par l\'organisateur');
+      const t=this.target();if(t&&t.type==='start')this.validate('auto');else{this.compute(GPS.last);this.render();this.lastAnn=Date.now();this.announce('Départ ! Chrono lancé. '+this.guidance())}
+      this.publish(true);this.save();this.redrawMap();
+    }
+    if((r.status==='closed'||r.status==='deleted')&&!this.ended){toast('L\'organisateur a clos la course.',true);this.finish(false,'closed')}
+  },
+  status(){return this.ended?this.rstatus:this.t0?'running':'waiting'},
+  publish(force){
+    if(!this.link)return;const now=Date.now();if(!force&&now-this.lastPub<5000)return;this.lastPub=now;const f=GPS.last;
+    this.link.publishState({pid:this.pid,name:this.participant||'Coureur',status:this.status(),startAt:this.t0,finishAt:this.finishAt,
+      visited:this.splits.filter(s=>s.id&&s.mode!=='skip').map(s=>({id:s.id,el:s.elapsed,leg:s.leg,m:s.mode==='manual'?'manual':'auto'})),score:0,pen:0,net:0,
+      pos:f?{lat:+f.lat.toFixed(6),lon:+f.lon.toFixed(6),acc:f.sim?3:Math.round(f.acc),t:f.t,sim:f.sim?1:undefined}:null,bat:Battery.level,app:NATIVE?'android':'web',og:settings.profile,upd:now});
+    if(force||now-this.lastTrk>60000){this.lastTrk=now;const e=encTrack(this.track.slice(-3000));if(e)this.link.publishTrack(this.pid,this.participant||'Coureur',e)}
+  },
+  saveSoon(){if(Date.now()-this.lastSave>20000)this.save()},
+  save(){if(this.ended)return;this.lastSave=Date.now();
+    store.set(K.active,{id:this.id,course:this.c,participant:this.participant,date:this.date,idx:this.idx,splits:this.splits,t0:this.t0,
+      pausedTotal:this.pausedTotal+(this.pausedAt?Date.now()-this.pausedAt:0),track:this.track.slice(-1500),pid:this.pid,race:this.race})},
+  async checkActive(){
+    const a=store.get(K.active,null);if(!a||!a.course)return true;
+    const v=await modal({title:'Une épreuve est déjà en cours',body:`<p>${esc(a.course.name)}</p>`,buttons:[{label:'Reprendre cette épreuve',value:'r',primary:true},{label:'L\'abandonner',value:'n',danger:true},{label:'Annuler',value:'c'}]});
+    if(v==='r'){this.resumeActive();return false}
+    if(v==='n'){store.del(K.active);return true}
+    return false;
+  },
+  async resumeActive(){
+    const a=store.get(K.active,null);if(!a||!a.course){store.del(K.active);Home.render();return}
+    Snd.unlock();Voice.unlock();Compass.enable();
+    let link=null;if(a.race){try{link=await RaceLink.connect(a.race.code,{silent:true})}catch(e){}
+      if(link&&!link.race)toast('Relais injoignable pour l\'instant : l\'épreuve reprend, les données partiront dès le retour du réseau.',true)}
+    this.open(a.course,a.participant,{race:link,resume:a});
+  },
+  renderNet(){const e=$('#runNet');if(!e)return;e.hidden=!this.link;if(this.link){e.textContent=this.link.connected?'📡':'📡✖';e.title=this.link.connected?'Connecté au relais':'Hors ligne : envoi au retour du réseau'}},
   target(){return this.pts[this.idx]},
   simExtra(){return[['⇢ +10 m balise',()=>{const t=this.target(),f=GPS.last;if(t&&f)GPS.simMove(bearing(f,t),Math.min(10,dist(f,t)))}]]},
   applyProfile(){
@@ -1833,14 +4343,15 @@ const Run={map:null,lay:null,
     if(this.ended)return;
     this.compute(f);this.render();this.updateMap();
     if(this.pausedAt)return;
+    if(this.waiting){this.publish();this.saveSoon();return}
     const t=this.target(),d=this.d;
-    if(!this.inZone&&d<=settings.approachDist&&d>settings.radius){
+    if(!this.inZone&&d<=settings.approachDist&&d>this.rad()){
       this.inZone=true;Snd.ok();vib(120);
       this.announce(`Zone d'approche. ${t.name} à ${spokenDist(d)}, ${this.spokenDir(this.b)}.`+(t.desc?` Indice : ${t.desc}.`:''));this.lastAnnDist=d;
     }else if(this.inZone&&d>settings.approachDist+10)this.inZone=false;
-    const accOk=f.acc<=Math.max(30,settings.radius*3);
-    if(d<=settings.radius&&accOk){if(!this.insideSince)this.insideSince=Date.now();if(f.sim||Date.now()-this.insideSince>=1500)this.validate('auto')}else this.insideSince=null;
-    if(!this.ended){this.beepCheck();this.tick()}
+    const accOk=f.acc<=Math.max(30,this.rad()*3);
+    if(d<=this.rad()&&accOk){if(!this.insideSince)this.insideSince=Date.now();if(f.sim||Date.now()-this.insideSince>=1500)this.validate('auto')}else this.insideSince=null;
+    if(!this.ended){this.beepCheck();this.tick();this.publish();this.saveSoon()}
   },
   spokenDir(b){
     if(settings.dirFormat==='clock'){const hd=currentHeading();if(hd){const c=clockOf((b-hd.h+360)%360);return`à ${c} heure${c>1?'s':''}`+(c===12?', droit devant':c===6?', derrière vous':'')}}
@@ -1862,8 +4373,9 @@ const Run={map:null,lay:null,
   tick(){
     $('#runChrono').textContent=fmtTime(this.elapsed());
     if(this.ended||this.pausedAt)return;
-    const now=Date.now();
-    if(this.insideSince&&now-this.insideSince>=1500){const f=GPS.last,t=this.target();if(f&&t&&dist(f,t)<=settings.radius){this.validate('auto');return}this.insideSince=null}
+    const now=Date.now();this.publish();
+    if(this.waiting){if(now-this.lastAnn>=settings.interval*1000)this.announce('En attente du départ donné par l\'organisateur. '+this.guidance());return}
+    if(this.insideSince&&now-this.insideSince>=1500){const f=GPS.last,t=this.target();if(f&&t&&dist(f,t)<=this.rad()){this.validate('auto');return}this.insideSince=null}
     const age=now-this.lastFixT,err=GPS.lastErrT>this.lastFixT;
     if(((err&&age>10000)||age>60000)&&!this.lostSaid){this.lostSaid=true;Snd.warn();this.announce(err?'Signal GPS perdu. Avancez à découvert ou attendez.':'Position GPS non actualisée depuis une minute.');return}
     const iv=(this.inZone?Math.min(settings.interval,settings.zoneInterval):settings.interval)*1000;
@@ -1871,21 +4383,23 @@ const Run={map:null,lay:null,
   },
   beepLoop(){clearInterval(this.beepI);this.nextBeep=0;this.beepI=setInterval(()=>this.beepCheck(),100)},
   beepCheck(){
-    if(this.ended||this.pausedAt||!settings.beep||!this.inZone||this.d==null||current!=='run')return;
+    if(this.ended||this.pausedAt||this.waiting||!settings.beep||!this.inZone||this.d==null||current!=='run')return;
     const now=Date.now();if(now<this.nextBeep||Voice.busy())return;
-    const r=settings.radius,A=Math.max(settings.approachDist,r+1),k=Math.max(0,Math.min(1,(this.d-r)/(A-r)));
+    const r=this.rad(),A=Math.max(settings.approachDist,r+1),k=Math.max(0,Math.min(1,(this.d-r)/(A-r)));
     this.nextBeep=now+170+k*1300;let freq=1500-k*900,pan=0;const hd=currentHeading();
     if(hd){const rel=((this.b-hd.h)+360)%360;if(settings.stereo)pan=Math.sin(rel*RAD);if(rel>100&&rel<260)freq*=0.6}
     Snd.tone(freq,0.08,{pan,vol:0.55});
   },
   validate(mode){
     if(this.ended)return;
+    if(this.waiting){this.announce('En attente du départ donné par l\'organisateur.');return}
     const t=this.target(),now=Date.now();
     if(t.type==='start'&&!this.t0)this.t0=now;
     const el=this.elapsed(),prev=this.splits.length?this.splits[this.splits.length-1].elapsed:0,f=GPS.last;
-    this.splits.push({name:t.name,type:t.type,elapsed:el,leg:el-prev,mode,lat:f?+f.lat.toFixed(6):t.lat,lon:f?+f.lon.toFixed(6):t.lon,time:new Date(now).toISOString()});
+    this.splits.push({id:t.id,name:t.name,type:t.type,elapsed:el,leg:el-prev,mode,lat:f?+f.lat.toFixed(6):t.lat,lon:f?+f.lon.toFixed(6):t.lon,time:new Date(now).toISOString()});
     this.idx++;this.inZone=false;this.insideSince=null;this.route=null;this.lastRouteT=0;this.lastAnnDist=null;this.d=null;
     if(this.idx>=this.pts.length){this.finish(true);return}
+    this.publish(true);this.save();
     vib(mode==='skip'?[400]:[200,100,200]);
     if(mode==='skip')Snd.warn();else Snd.chime();
     let msg=t.type==='start'?'Départ validé, chrono lancé. ':mode==='skip'?`${t.name} passée. `:`${t.name} validée ! Temps : ${spokenTime(el)}. `;
@@ -1894,20 +4408,23 @@ const Run={map:null,lay:null,
     this.lastAnn=Date.now();
     setTimeout(()=>{if(!this.ended)this.announce(msg+this.guidance())},800);
   },
-  finish(done){
-    this.ended=true;Lock.disable(true);RunOpts.hide();clearInterval(this.tickI);clearInterval(this.beepI);
+  finish(done,why){
+    this.ended=true;this.waiting=false;Lock.disable(true);RunOpts.hide();clearInterval(this.tickI);clearInterval(this.beepI);
     if(this.pausedAt){this.pausedTotal+=Date.now()-this.pausedAt;this.pausedAt=null}
     const total=this.elapsed();
+    this.rstatus=done?'finished':(why||'abandoned');this.finishAt=this.t0?this.t0+total+this.pausedTotal:null;
+    store.del(K.active);this.publish(true);
+    const link=this.link;if(link)setTimeout(()=>{try{link.close()}catch(e){}if(this.link===link)this.link=null},4000);
     if(done){Snd.fanfare();vib([300,100,300,100,600]);this.announce(`Arrivée ! Parcours terminé en ${spokenTime(total)}. Bravo !`)}
-    else this.announce('Épreuve arrêtée.');
+    else this.announce(why==='closed'?'Course close par l\'organisateur. Vos temps sont enregistrés.':'Épreuve arrêtée.');
     const r={id:this.id,courseId:this.c.id,courseName:this.c.name,participant:this.participant,date:this.date,total,finished:done,
-      nPoints:this.pts.length,splits:this.splits,track:this.track.slice(-4000),radius:settings.radius};
+      nPoints:this.pts.length,splits:this.splits,track:this.track.slice(-4000),radius:this.rad(),raceCode:this.race?this.race.code:undefined};
     results.push(r);saveResults();
     if(this.unsub)this.unsub();this.unsub=null;GPS.stop();Wake.off();
     setTimeout(()=>Results.show(r),done?2500:400);
   },
   async askQuit(){
-    const v=await modal({title:'Arrêter l\'épreuve ?',body:'<p>Les temps déjà réalisés seront conservés.</p>',buttons:[{label:'Arrêter et voir les résultats',value:true,danger:true},{label:'Continuer l\'épreuve',value:false,primary:true}]});
+    const v=await modal({title:this.race?'Abandonner la course ?':'Arrêter l\'épreuve ?',body:'<p>Les temps déjà réalisés seront conservés.</p>',buttons:[{label:'Arrêter et voir les résultats',value:true,danger:true},{label:'Continuer l\'épreuve',value:false,primary:true}]});
     if(v&&!this.ended)this.finish(false);
   },
   togglePause(){
@@ -1915,11 +4432,12 @@ const Run={map:null,lay:null,
     if(this.pausedAt){this.pausedTotal+=Date.now()-this.pausedAt;this.pausedAt=null;b.classList.remove('paused');b.innerHTML='⏸ Pause';this.announce('Reprise. '+this.guidance())}
     else{this.pausedAt=Date.now();b.classList.add('paused');b.innerHTML='▶ Reprendre';Voice.stop();this.announce('Pause. Le chrono est arrêté.')}
   },
-  onResumeVisible(){if(!this.ended&&!this.pausedAt)setTimeout(()=>this.announce('Guidage repris. '+this.guidance()),500)},
+  onResumeVisible(){if(!this.ended&&!this.pausedAt&&!this.waiting)setTimeout(()=>this.announce('Guidage repris. '+this.guidance()),500)},
   render(){
     const t=this.target();if(!t)return;
-    const nc=nControls(this.pts);let lbl=t.name;
-    if(t.type==='control')lbl+=` · ${shortLabel(this.pts,this.idx)}/${nc}`;
+    const nc=nControls(this.pts);let lbl=this.waiting?'⏳ Attente du départ':t.name;
+    if(t.type==='control'&&!this.waiting)lbl+=` · ${shortLabel(this.pts,this.idx)}/${nc}`;
+    this.renderNet();
     $('#runTarget').textContent=lbl;
     $('#runDist').textContent=this.d!=null?fmtDist(this.d):'—';
     $('#runProg').textContent=`${this.splits.length}/${this.pts.length} points`;
@@ -1950,10 +4468,10 @@ const Run={map:null,lay:null,
     if(!this.pathsDrawn){drawPaths(this.pathLay,Paths.get(this.c.id),mapStyleOf(this.map));this.pathsDrawn=true}
     if(settings.showDone)this.pts.slice(0,this.idx).forEach((p,i)=>L.marker([p.lat,p.lon],{icon:ctrlIcon(this.pts,i,{size:30,cls:'done'}),interactive:false}).addTo(this.lay));
     const t=this.target();if(!t)return;
-    if(!settings.showMe&&this.idx>0){const pv=this.pts[this.idx-1];
+    if(!this.showMe()&&this.idx>0){const pv=this.pts[this.idx-1];
       L.polyline([[pv.lat,pv.lon],[t.lat,t.lon]],{color:'#FF2BD6',weight:5,opacity:.9,interactive:false}).addTo(this.lay);
       L.marker([pv.lat,pv.lon],{icon:ctrlIcon(this.pts,this.idx-1,{size:34}),interactive:false}).addTo(this.lay)}
-    L.circle([t.lat,t.lon],{radius:settings.radius,color:'#000',weight:3,fillColor:'#FFD400',fillOpacity:.25,interactive:false}).addTo(this.lay);
+    L.circle([t.lat,t.lon],{radius:this.rad(),color:'#000',weight:3,fillColor:'#FFD400',fillOpacity:.25,interactive:false}).addTo(this.lay);
     this.line=L.polyline([],{color:'#FF2BD6',weight:7,dashArray:'1 14',lineCap:'round',interactive:false}).addTo(this.lay);
     const rs=PATH_STYLE[mapStyleOf(this.map)]||PATH_STYLE.map;
     this.routeCase=L.polyline([],{color:rs.routeCase,weight:19,opacity:.95,lineCap:'round',lineJoin:'round',interactive:false}).addTo(this.lay);
@@ -1964,7 +4482,7 @@ const Run={map:null,lay:null,
   updateMap(){
     if(!this.map||settings.profile!=='low')return;
     const f=GPS.last,t=this.target();if(!f||!t)return;
-    if(!settings.showMe){ /* comme en vraie course d'orientation : ni position, ni trait, ni itinéraire, carte fixe */
+    if(!this.showMe()){ /* comme en vraie course d'orientation : ni position, ni trait, ni itinéraire, carte fixe */
       if(this.meM){this.lay.removeLayer(this.meM);this.lay.removeLayer(this.accC);this.meM=null;this.accC=null}
       if(this.line)this.line.setLatLngs([]);if(this.routeLine){this.routeCase.setLatLngs([]);this.routeLine.setLatLngs([])}
       this.route=null;$('#runRoute').textContent='';return;
@@ -1983,7 +4501,7 @@ const Run={map:null,lay:null,
   fit(force){
     if(!this.map||settings.profile!=='low')return;
     const f=GPS.last,t=this.target();if(!t)return;this.lastFit=Date.now();
-    if(!settings.showMe){const pv=this.idx>0?this.pts[this.idx-1]:null;
+    if(!this.showMe()){const pv=this.idx>0?this.pts[this.idx-1]:null;
       if(pv&&dist(pv,t)>5)this.map.fitBounds(L.latLngBounds([[pv.lat,pv.lon],[t.lat,t.lon]]),{padding:[70,70],maxZoom:18,animate:!force});
       else this.map.setView([t.lat,t.lon],17,{animate:!force});return}
     if(!f){this.map.setView([t.lat,t.lon],17);return}
@@ -2037,16 +4555,593 @@ $('#rsShare').onclick=()=>shareFile(Results.fname(),resultToGPX(Results.cur));
 $('#rsDownload').onclick=()=>saveFile(Results.fname(),resultToGPX(Results.cur));
 $('#rsCopy').onclick=async()=>{if(NATIVE){try{await P.share.share({title:'Résultats O\'Guide',text:Results.summary(),dialogTitle:'Envoyer le résumé'})}catch(e){}return}try{await navigator.clipboard.writeText(Results.summary());toast('Résumé copié')}catch(e){toast('Copie impossible dans ce navigateur',true)}};
 
+/* ================= O'Guide : courses organisées et suivi en pratique libre =================
+   Même relais et même protocole que Shadow CO : une course ou une séance créée avec l'une des deux
+   applications peut être rejointe avec l'autre (O'Guide : courses en ordre imposé). */
+const Sheet={open:false,onClose:null,
+  show(title,node,onClose){if(this.open)this.hide();$('#sheetTitle').textContent=title;const b=$('#sheetBody');b.innerHTML='';b.appendChild(node);this.onClose=onClose||null;$('#sheet').hidden=false;this.open=true;setTimeout(()=>$('#sheetTitle').focus(),50)},
+  hide(){if(!this.open)return;$('#sheet').hidden=true;this.open=false;const f=this.onClose;this.onClose=null;if(f)f()}
+};
+$$('.sheetClose').forEach(b=>b.onclick=()=>Sheet.hide());
+const Battery={level:null,
+  async init(){try{if(navigator.getBattery){const b=await navigator.getBattery();const u=()=>{this.level=Math.round(b.level*100)};u();b.addEventListener('levelchange',u)}}catch(e){}}
+};
+Battery.init();
+const ptsOf=p=>p&&p.pts!=null?p.pts:10;
+const profIcon=st=>st.og==='blind'?' 👂':st.og==='low'?' 👁':'';
+/* parcours sur la carte de l'organisateur */
+function drawCourse(layer,c){
+  layer.clearLayers();const pts=c.points;if(!pts.length)return null;
+  if(pts.length>1)L.polyline(pts.map(p=>[p.lat,p.lon]),{color:'#FF2BD6',weight:3,opacity:.85,interactive:false}).addTo(layer);
+  pts.forEach((p,i)=>L.marker([p.lat,p.lon],{icon:ctrlIcon(pts,i,{size:34}),interactive:false}).addTo(layer));
+  return L.latLngBounds(pts.map(p=>[p.lat,p.lon]));
+}
+
+/* ---------------- Organiser : préparation (ordre imposé) ---------------- */
+const OrgSetup={course:null,
+  open(c){
+    if(!c)return;this.course=c;show('orgsetup');
+    $('#osCourse').innerHTML=`<p><b>${esc(c.name)}</b></p><p class="hint">${nControls(c.points)} balises · ${fmtDist(courseLength(c.points))} · ordre imposé</p>`;
+    $('#osName').value=c.name+' – '+new Date().toLocaleDateString('fr-FR');
+    $('#osRadius').value=String(settings.radius||10);this.sync();
+  },
+  sync(){const hasStart=this.course&&this.course.points.some(p=>p.type==='start');
+    $('#osStartHelp').textContent=$('#osStart').value==='mass'?'Tu appuieras sur « Lancer le départ » : tous les chronos démarrent ensemble, avec une annonce vocale sur chaque téléphone.':hasStart?'Chaque coureur lance son chrono en validant le départ.':'Pas de départ dans ce parcours : le chrono démarre dès que le coureur rejoint la course.'},
+  async create(){
+    const c=this.course,broker=await pickBroker($('#osCreate'));if(!broker)return;
+    const o={code:newCode(broker),name:$('#osName').value.trim()||c.name,created:new Date().toISOString(),status:'open',startAt:null,
+      course:{id:c.id,name:c.name,mode:'ordered',timeLimit:45,penalty:10,points:c.points.map(p=>({id:p.id||uid(),lat:p.lat,lon:p.lon,type:p.type,name:p.name,desc:p.desc||''}))},
+      opts:{startType:$('#osStart').value,showMe:$('#osShowMe').checked,showTrack:true,beep:true,radius:parseInt($('#osRadius').value,10)||10}};
+    const all=store.get(K.orgs,[]);all.push(o);store.set(K.orgs,all.slice(-30));
+    await Org.open(o);Org.showQR();
+  }
+};
+$('#osStart').addEventListener('change',()=>OrgSetup.sync());
+$('#osCreate').onclick=()=>OrgSetup.create();
+
+/* ---------------- Relais chiffré (MQTT sur WebSocket) ----------------
+   Les messages passent par un relais public ; ils sont chiffrés (AES-GCM) avec une clé dérivée du code
+   de la course (PBKDF2), et le nom du canal est lui aussi dérivé du code : sans le code, rien n'est lisible. */
+const BROKERS={H:'wss://broker.hivemq.com:8884/mqtt',E:'wss://broker.emqx.io:8084/mqtt'};
+(()=>{const t=store.get('shco.testbroker',null);if(t)BROKERS.T=t})();
+const CODE_ABC='23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+const WEB_URL='https://gregmey0.github.io/oguide/';
+function newCode(b){const r=crypto.getRandomValues(new Uint8Array(9));return b+[...r].map(x=>CODE_ABC[x%CODE_ABC.length]).join('')}
+function normCode(s){const m=/join-([0-9A-Z-]+)/i.exec(String(s||''));return(m?m[1]:String(s||'')).toUpperCase().replace(/[^0-9A-Z]/g,'')}
+function validCode(c){return c.length===10&&!!BROKERS[c[0]]&&[...c.slice(1)].every(ch=>CODE_ABC.includes(ch))}
+const fmtCode=c=>c.slice(0,3)+'-'+c.slice(3,6)+'-'+c.slice(6);
+function joinURL(code){const base=NATIVE||!/^https?:/.test(location.protocol)?WEB_URL:location.origin+location.pathname;return base+'#join-'+code}
+async function deriveRace(code){
+  const enc=new TextEncoder(),base=await crypto.subtle.importKey('raw',enc.encode(code),'PBKDF2',false,['deriveBits']);
+  const bits=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:enc.encode('shadowco-v1'),iterations:150000,hash:'SHA-256'},base,384));
+  const key=await crypto.subtle.importKey('raw',bits.slice(0,32),'AES-GCM',false,['encrypt','decrypt']);
+  return{key,tid:[...bits.slice(32,44)].map(b=>b.toString(16).padStart(2,'0')).join('')};
+}
+async function seal(key,obj){const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(obj))));
+  const o=new Uint8Array(12+ct.length);o.set(iv);o.set(ct,12);return o}
+async function unseal(key,b){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b.slice(0,12)},key,b.slice(12));return JSON.parse(new TextDecoder().decode(pt))}
+
+/* Client MQTT 3.1.1 minimal (QoS 0, messages retenus), reconnexion automatique */
+class Mqtt{
+  constructor(url){this.url=url;this.subs=new Set();this.handlers=[];this.pending=new Map();this.connected=false;this.closed=false;this.pid=1;this.retry=0;this.onstate=null;this.lastRx=0;this.lastPing=0}
+  static str(s){const b=new TextEncoder().encode(s),o=new Uint8Array(2+b.length);o[0]=b.length>>8;o[1]=b.length&255;o.set(b,2);return o}
+  static pkt(h,parts){const len=parts.reduce((a,p)=>a+p.length,0),lb=[];let x=len;do{let d=x%128;x=Math.floor(x/128);if(x>0)d|=128;lb.push(d)}while(x>0);
+    const o=new Uint8Array(1+lb.length+len);o[0]=h;o.set(lb,1);let k=1+lb.length;for(const p of parts){o.set(p,k);k+=p.length}return o}
+  connect(){
+    if(this.closed)return;let ws;
+    try{ws=new WebSocket(this.url,['mqtt'])}catch(e){this._later();return}
+    ws.binaryType='arraybuffer';this.ws=ws;this.buf=new Uint8Array(0);
+    ws.onopen=()=>{this._send(Mqtt.pkt(0x10,[Mqtt.str('MQTT'),new Uint8Array([4,2,0,40]),Mqtt.str('shco_'+Math.random().toString(36).slice(2,12))]))};
+    ws.onmessage=e=>this._feed(new Uint8Array(e.data));
+    ws.onclose=()=>{if(this.ws!==ws)return;const was=this.connected;this.connected=false;clearInterval(this.ka);if(was&&this.onstate)this.onstate(false);this._later()};
+    ws.onerror=()=>{try{ws.close()}catch(e){}};
+  }
+  _later(){if(this.closed)return;clearTimeout(this.rt);this.rt=setTimeout(()=>this.connect(),Math.min(15000,800*Math.pow(1.7,this.retry++)))}
+  _send(b){try{if(this.ws&&this.ws.readyState===1){this.ws.send(b);return true}}catch(e){}return false}
+  _feed(chunk){
+    const nb=new Uint8Array(this.buf.length+chunk.length);nb.set(this.buf);nb.set(chunk,this.buf.length);this.buf=nb;
+    for(;;){const b=this.buf;if(b.length<2)return;let i=1,mult=1,rem=0,c;
+      do{if(i>=b.length)return;c=b[i++];rem+=(c&127)*mult;mult*=128}while(c&128&&i<5);
+      if(b.length<i+rem)return;this._handle(b[0],b.slice(i,i+rem));this.buf=b.slice(i+rem)}
+  }
+  _handle(h,body){
+    this.lastRx=Date.now();const t=h>>4;
+    if(t===2){if(body[1]!==0){try{this.ws.close()}catch(e){}return}
+      this.connected=true;this.retry=0;this.lastPing=Date.now();this.subs.forEach(s=>this._sub(s));this._flush();
+      clearInterval(this.ka);this.ka=setInterval(()=>{const n=Date.now();
+        if(n-this.lastRx>65000){try{this.ws.close()}catch(e){}return}
+        if(n-this.lastPing>20000){this.lastPing=n;this._send(new Uint8Array([0xC0,0]))}},5000);
+      if(this.onstate)this.onstate(true);return}
+    if(t===3){const q=(h>>1)&3,tl=(body[0]<<8)|body[1],topic=new TextDecoder().decode(body.slice(2,2+tl));let j=2+tl;if(q>0)j+=2;
+      const pl=body.slice(j);this.handlers.forEach(fn=>{try{fn(topic,pl,!!(h&1))}catch(e){console.error(e)}})}
+  }
+  onMessage(fn){this.handlers.push(fn)}
+  subscribe(t){this.subs.add(t);if(this.connected)this._sub(t)}
+  _sub(t){const id=(this.pid++%65535)||1;this._send(Mqtt.pkt(0x82,[new Uint8Array([id>>8,id&255]),Mqtt.str(t),new Uint8Array([0])]))}
+  publish(t,payload,retain){this.pending.set(t,{payload,retain});if(this.connected)this._flush()}
+  _flush(){for(const[t,m]of[...this.pending]){if(!this._send(Mqtt.pkt(0x30|(m.retain?1:0),[Mqtt.str(t),m.payload])))return;this.pending.delete(t)}}
+  waitConnected(ms){return new Promise(res=>{if(this.connected)return res(true);const t0=Date.now(),i=setInterval(()=>{if(this.connected||Date.now()-t0>ms){clearInterval(i);res(this.connected)}},100)})}
+  close(){this.closed=true;clearTimeout(this.rt);clearInterval(this.ka);try{this._send(new Uint8Array([0xE0,0]));this.ws&&this.ws.close()}catch(e){}}
+}
+
+/* Trace compacte : différences entières (1e-5 degré ≈ 1 m, secondes) */
+function encTrack(tr){if(!tr||!tr.length)return null;const t0=tr[0][2];let a0=0,b0=0,c0=0;const d=[];
+  for(const q of tr){const a=Math.round(q[0]*1e5),b=Math.round(q[1]*1e5),c=Math.round((q[2]-t0)/1000);d.push(a-a0,b-b0,c-c0);a0=a;b0=b;c0=c}return{t0,d}}
+/* distance d'une trace [lat,lon,t] en ignorant les sauts GPS (> 20 m/s) */
+function trackDist(tr){let d=0;for(let i=1;i<tr.length;i++){const a=tr[i-1],b=tr[i],s=dist({lat:a[0],lon:a[1]},{lat:b[0],lon:b[1]}),dt=Math.max(1,(b[2]-a[2])/1000);if(s/dt<20)d+=s}return d}
+function mergeTracks(a,b){const m=new Map();(a||[]).concat(b||[]).forEach(q=>m.set(q[2],q));return[...m.values()].sort((x,y)=>x[2]-y[2])}
+function decTrack(e){const o=[];if(!e||!e.d)return o;let a=0,b=0,c=0;for(let i=0;i+2<e.d.length;i+=3){a+=e.d[i];b+=e.d[i+1];c+=e.d[i+2];o.push([a/1e5,b/1e5,e.t0+c*1000])}return o}
+
+/* Lien coureur ↔ course */
+const RaceLink={
+  async connect(code,{silent}={}){
+    code=normCode(code);if(!validCode(code))return null;
+    const{key,tid}=await deriveRace(code),base='shco/v1/'+tid,m=new Mqtt(BROKERS[code[0]]);
+    const link={code,key,base,m,race:null,connected:false,onRace:null,ownedByRun:true,
+      publishState(st){seal(key,Object.assign({v:1,type:'p'},st)).then(b=>m.publish(base+'/p/'+st.pid,b,true))},
+      publishTrack(pid,name,e){seal(key,Object.assign({v:1,type:'t',pid,name},e)).then(b=>m.publish(base+'/t/'+pid,b,true))},
+      close(){m.close()}};
+    let waiter=null;
+    m.onstate=c=>{link.connected=c;if(current==='run')Run.renderNet();if(current==='follow')Follow.render()};
+    m.onMessage(async(topic,pl)=>{
+      if(topic!==base+'/race')return;
+      if(!pl.length){link.race={status:'deleted'};if(link.onRace)link.onRace(link.race);if(waiter)waiter(link.race);return}
+      try{const r=await unseal(key,pl);link.race=r;if(link.onRace)link.onRace(r);if(waiter){waiter(r);waiter=null}}catch(e){}
+    });
+    m.subscribe(base+'/race');m.connect();
+    const r=await new Promise(res=>{waiter=res;setTimeout(()=>res(null),12000)});waiter=null;
+    if(!r&&!silent){m.close();return null}
+    return link;
+  }
+};
+
+/* ---------------- Rejoindre une course ---------------- */
+const Join={link:null,stream:null,
+  open(code){
+    show('join');$('#jCode').value=code?fmtCode(normCode(code)):'';$('#jName').value=store.get(K.me,'');
+    $('#jInfo').innerHTML='';$('#jConfirm').hidden=true;$('#jScan').hidden=!('BarcodeDetector' in window&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+    if(code)this.lookup();
+  },
+  leave(){this.stopScan();if(this.link){this.link.close();this.link=null}},
+  async lookup(){
+    const code=normCode($('#jCode').value);
+    if(!validCode(code)){toast('Code invalide : 10 caractères, par exemple HK7-Q4M-ZP2D',true);return}
+    $('#jCode').value=fmtCode(code);$('#jConfirm').hidden=true;$('#jInfo').innerHTML='<p class="card">⏳ Recherche de la course…</p>';
+    if(this.link){this.link.close();this.link=null}
+    let link=null;try{link=await RaceLink.connect(code)}catch(e){}
+    if(current!=='join'){if(link)link.close();return}
+    if(!link){$('#jInfo').innerHTML='<p class="warnbox">Course introuvable : vérifie le code et la connexion internet.</p>';return}
+    const r=link.race;
+    if(r.status==='closed'||r.status==='deleted'){link.close();const t=r.kind==='train'?'Cette séance est terminée.':'Cette course est close.';$('#jInfo').innerHTML=`<p class="warnbox">${t}</p>`;Voice.say(t);return}
+    if(r.kind==='train'){
+      this.link=link;
+      $('#jInfo').innerHTML=`<section class="card"><h2>📍 ${esc(r.name)}</h2><p>Suivi en pratique libre : rien à faire, ton téléphone envoie ta position à l'encadrant pendant la séance.</p>
+        <p class="hint">Rejoins, puis range le téléphone dans la poche ou le sac.</p><p class="hint web-only">Sur navigateur, l'écran doit rester allumé (le verrouiller coupe le suivi). Avec l'appli Android, tu peux le verrouiller.</p></section>
+        <p class="hint">Ta position et ta trace sont transmises à l'encadrant (chiffrées) jusqu'à la fin de la séance.</p>`;
+      $('#jGo').textContent='✔ Rejoindre le suivi';$('#jConfirm').hidden=false;
+      Voice.say(`Séance trouvée : ${r.name}. Suivi en pratique libre. Indiquez votre nom puis touchez Rejoindre le suivi.`);setTimeout(()=>$('#jName').focus(),50);return}
+    const c=r.course;
+    if(!c||(c.mode&&c.mode!=='ordered')){link.close();const t='Cette course est en ordre libre ou au score : O\'Guide guide balise par balise, dans l\'ordre. Utilise Shadow CO pour cette course.';$('#jInfo').innerHTML=`<p class="warnbox">${t}</p>`;Voice.say(t);return}
+    this.link=link;const nc=nControls(c.points);
+    $('#jInfo').innerHTML=`<section class="card"><h2>${esc(r.name)}</h2><p>Ordre imposé · ${nc} balise${nc>1?'s':''} · ${fmtDist(courseLength(c.points))}</p>
+      <p class="hint">${r.opts.startType==='mass'?'Départ groupé donné par l\'organisateur':'Départ individuel : le chrono démarre au départ'} · validation à ${r.opts.radius||10} m${r.status==='started'?' · <b>course déjà lancée</b>':''}</p></section>
+      <p class="hint">Le guidage O'Guide reste le même (voix, bips, carte malvoyant). En rejoignant, ta position et tes temps sont transmis à l'organisateur (chiffrés).</p>`;
+    $('#jGo').textContent='✔ Rejoindre la course';$('#jConfirm').hidden=false;
+    Voice.say(`Course trouvée : ${r.name}. ${nc} balises, dans l'ordre. ${r.opts.startType==='mass'?'Départ groupé.':'Départ individuel.'} Indiquez votre nom puis touchez Rejoindre la course.`);
+    setTimeout(()=>$('#jName').focus(),50);
+  },
+  async join(){
+    const name=$('#jName').value.trim();if(!name){toast('Indique ton nom ou ton prénom',true);Voice.say('Indiquez votre nom.');$('#jName').focus();return}
+    if(!this.link){toast('Cherche d\'abord la course',true);return}
+    store.set(K.me,name);Snd.unlock();Voice.unlock();
+    if(this.link.race.kind==='train'){const link=this.link;this.link=null;Follow.begin({link,name});return}
+    if(!await Run.checkActive())return;
+    const link=this.link,r=link.race,c=r.course;this.link=null;Compass.enable();
+    const course={id:'race-'+link.code,name:r.name,created:r.created,points:c.points.map(p=>({id:p.id,lat:p.lat,lon:p.lon,type:p.type,name:p.name,desc:p.desc||''}))};
+    Run.open(course,name,{race:link});
+  },
+  async scan(){
+    try{
+      const det=new BarcodeDetector({formats:['qr_code']}),v=$('#jVideo');
+      this.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});v.srcObject=this.stream;v.hidden=false;await v.play();
+      $('#jScan').textContent='✖ Arrêter le scan';
+      const loop=async()=>{if(!this.stream)return;try{const r=await det.detect(v);if(r.length){const code=normCode(r[0].rawValue);if(validCode(code)){this.stopScan();Snd.ok();vib(150);$('#jCode').value=fmtCode(code);this.lookup();return}}}catch(e){}setTimeout(loop,300)};loop();
+    }catch(e){this.stopScan();toast('Caméra indisponible : saisis le code à la main.',true)}
+  },
+  stopScan(){if(this.stream){this.stream.getTracks().forEach(t=>t.stop());this.stream=null}const v=$('#jVideo');v.hidden=true;v.srcObject=null;$('#jScan').textContent='📷 Scanner le QR'}
+};
+$('#jLookup').onclick=()=>Join.lookup();
+$('#jCode').addEventListener('keydown',e=>{if(e.key==='Enter')Join.lookup()});
+$('#jGo').onclick=()=>Join.join();
+$('#jScan').onclick=()=>{if(Join.stream)Join.stopScan();else Join.scan()};
+
+/* ---------------- Suivi en pratique libre : côté pratiquant ----------------
+   Aucun parcours, aucune info : le téléphone envoie sa position et sa trace à l'encadrant. */
+const Follow={on:false,link:null,tickI:null,unsub:null,
+  begin(a){
+    const st=a.resume||{},link=a.link||null;
+    clearInterval(this.tickI);if(this.unsub)this.unsub();
+    Object.assign(this,{link,code:st.code||(link&&link.code),name:a.name||st.name||'Pratiquant',sname:(link&&link.race&&link.race.name)||st.sname||'Entraînement',
+      pid:st.pid||uid(),startAt:st.startAt||Date.now(),finishAt:null,track:st.track||[],dist:st.dist||0,status:'running',on:true,lastPub:0,lastTrk:0,lastSave:0});
+    if(link)link.onRace=r=>this.onRace(r);
+    show('follow');
+    $('#fwTitle').textContent='Suivi en cours';$('#fwIcon').textContent='📍';$('#fwIcon').classList.add('on');$('#fwName').textContent=this.sname;
+    $('#fwStop').hidden=false;$('#fwHome').hidden=true;$('#fwHint').hidden=false;
+    GPS.start();this.unsub=GPS.on(f=>this.onFix(f));if(!NATIVE)Wake.on();
+    this.tickI=setInterval(()=>this.tick(),1000);
+    this.save();this.publish(true);this.render();
+    if(!a.resume){vib([150,80,150]);toast('📍 Suivi lancé : tu peux ranger le téléphone.');Voice.say(`Suivi lancé pour la séance ${this.sname}. Vous pouvez ranger le téléphone.`)}else Voice.say('Suivi repris.')
+    if(link&&link.race)this.onRace(link.race);
+  },
+  onFix(f){
+    if(!this.on)return;
+    let first=false;
+    if(f.acc<=30){const tr=this.track,l=tr[tr.length-1],p=[+f.lat.toFixed(6),+f.lon.toFixed(6),Date.now()];
+      if(!l){tr.push(p);first=true}else{const d=dist({lat:l[0],lon:l[1]},{lat:p[0],lon:p[1]});if(d>=5){if(d/Math.max(1,(p[2]-l[2])/1000)<20)this.dist+=d;tr.push(p);if(tr.length>20000)tr.splice(0,tr.length-20000)}}}
+    this.publish(first);this.saveSoon();
+  },
+  tick(){if(!this.on)return;this.publish();this.saveSoon();this.render()},
+  publish(force){
+    if(!this.link)return;const now=Date.now();if(!force&&now-this.lastPub<5000)return;this.lastPub=now;const f=GPS.last;
+    this.link.publishState({pid:this.pid,name:this.name,kind:'train',status:this.status,startAt:this.startAt,finishAt:this.finishAt,dist:Math.round(this.dist),
+      pos:f?{lat:+f.lat.toFixed(6),lon:+f.lon.toFixed(6),acc:f.sim?3:Math.round(f.acc),t:f.t,sim:f.sim?1:undefined}:null,bat:Battery.level,app:NATIVE?'android':'web',upd:now});
+    if(force||now-this.lastTrk>30000){this.lastTrk=now;const e=encTrack(this.track.slice(-4000));if(e)this.link.publishTrack(this.pid,this.name,e)}
+  },
+  saveSoon(){if(Date.now()-this.lastSave>20000)this.save()},
+  save(){if(!this.on)return;this.lastSave=Date.now();
+    store.set(K.follow,{code:this.code,name:this.name,sname:this.sname,pid:this.pid,startAt:this.startAt,dist:this.dist,track:this.track.slice(-3000)})},
+  onRace(r){if(!this.on||!r)return;if(r.name&&r.name!==this.sname){this.sname=r.name;$('#fwName').textContent=r.name}
+    if(r.status==='closed'||r.status==='deleted')this.stop('closed')},
+  async askStop(){
+    const v=await modal({title:'Arrêter le suivi ?',body:'<p>L\'encadrant ne verra plus tes déplacements.</p>',buttons:[{label:'Continuer le suivi',value:false,primary:true},{label:'⏹ Arrêter',value:true,danger:true}]});
+    if(v)this.stop('stopped');
+  },
+  stop(status){
+    if(!this.on)return;
+    this.status=status;this.finishAt=Date.now();this.publish(true);
+    this.on=false;clearInterval(this.tickI);if(this.unsub)this.unsub();this.unsub=null;
+    store.del(K.follow);GPS.stop();Wake.off();vib([300,100,300]);
+    const link=this.link;setTimeout(()=>{if(link)link.close();if(this.link===link)this.link=null},4000);
+    if(current!=='follow')show('follow');
+    $('#fwIcon').classList.remove('on');$('#fwIcon').textContent='✅';$('#fwTitle').textContent='Suivi terminé';
+    $('#fwState').textContent=status==='closed'?'L\'encadrant a terminé la séance.':'Tu as arrêté le suivi.';Voice.say(status==='closed'?'Suivi terminé : l\'encadrant a terminé la séance.':'Suivi arrêté.');
+    $('#fwStop').hidden=true;$('#fwHome').hidden=false;$('#fwHint').hidden=true;
+  },
+  render(){
+    if(current!=='follow'||!this.on)return;const f=GPS.last,net=this.link&&this.link.connected;
+    $('#fwState').textContent=`${net?'📡 Connecté':'📡✖ Hors ligne : envoi au retour du réseau'} · ${f&&Date.now()-f.t<30000?'🛰 GPS OK':'🛰 GPS : recherche…'}`;
+  },
+  async resume(){
+    const a=store.get(K.follow,null);if(!a)return;
+    if(this.on){show('follow');return}
+    let link=null;try{link=await RaceLink.connect(a.code,{silent:true})}catch(e){}
+    if(link&&link.race&&(link.race.status==='closed'||link.race.status==='deleted')){link.close();store.del(K.follow);toast('Cette séance est terminée.');Home.render();return}
+    if(link&&!link.race)toast('Relais injoignable : le suivi reprend, les données partiront dès le retour du réseau.',true);
+    this.begin({link,name:a.name,resume:a});
+  },
+  onResumeVisible(){if(this.on){this.publish(true);this.render()}}
+};
+holdButton($('#fwStop'),1500,()=>Follow.askStop());
+
+/* relais : serveur de test éventuel, puis HiveMQ, puis EMQX */
+async function pickBroker(b){
+  const old=b.textContent;b.disabled=true;b.textContent='⏳ Connexion au relais…';let broker=null;
+  for(const k of['T','H','E']){if(!BROKERS[k])continue;const m=new Mqtt(BROKERS[k]);m.connect();const ok=await m.waitConnected(7000);m.close();if(ok){broker=k;break}}
+  b.disabled=false;b.textContent=old;
+  if(!broker)toast('Relais injoignable : vérifie la connexion internet puis réessaie.',true);return broker;
+}
+
+/* ---------------- Suivi en pratique libre : création (sans parcours) ---------------- */
+const TrainSetup={
+  async open(){
+    const r=await modal({title:'📍 Suivi en pratique libre',body:'<p>Pas de parcours : les pratiquants rejoignent avec le code ou le QR code et rangent leur téléphone. Tu suis leurs déplacements sur la carte en direct, puis en replay.</p>',
+      input:{value:'Pratique libre – '+new Date().toLocaleDateString('fr-FR'),placeholder:'Nom de la séance'},buttons:[{label:'📡 Créer la séance',value:true,primary:true},{label:'Annuler',value:false}]});
+    if(!r||!r.value)return;
+    const broker=await pickBroker($('#hTrain'));if(!broker)return;
+    const o={kind:'train',code:newCode(broker),name:r.text||'Pratique libre',created:new Date().toISOString(),status:'open',startAt:Date.now(),course:null,opts:{}};
+    const all=store.get(K.orgs,[]);all.push(o);store.set(K.orgs,all.slice(-30));
+    await Org.open(o);Org.showQR();
+  }
+};
+$('#hTrain').onclick=()=>TrainSetup.open();
+
+
+/* ---------------- Organiser : suivi en direct ---------------- */
+const PALETTE=['#E6194B','#3CB44B','#4363D8','#F58231','#911EB4','#42D4F4','#F032E6','#9A6324','#000075','#808000','#469990','#DC143C','#2E8B57','#8B008B','#FF4500','#1E90FF'];
+const Org={map:null,lay:null,runLay:null,o:null,m:null,key:null,base:null,runners:{},trails:{},tracks:{},tickI:null,focus:null,lastSave:0,
+  statusLabel(s,kind){return(kind==='train'?{open:'en cours',closed:'terminée',deleted:'archivée'}:{open:'inscriptions ouvertes',started:'en cours',closed:'close',deleted:'archivée'})[s]||s},
+  isTrain(){return!!this.o&&this.o.kind==='train'},
+  fitAll(){const b=L.latLngBounds([]);if(this.o.course)this.o.course.points.forEach(p=>b.extend([p.lat,p.lon]));
+    Object.keys(this.runners).forEach(pid=>{const st=this.runners[pid];if(st.pos)b.extend([st.pos.lat,st.pos.lon]);if(this.isTrain())this.fullTrack(pid).forEach(q=>b.extend([q[0],q[1]]))});
+    if(b.isValid()){this.map.fitBounds(b,{padding:[30,30],maxZoom:18});return true}return false},
+  dataKey(){return'oguide.orgdata.'+this.o.code},
+  saveData(){if(!this.o)return;this.lastSave=Date.now();const tr={};Object.keys(this.runners).forEach(pid=>{const e=encTrack(this.fullTrack(pid));if(e)tr[pid]=e});
+    if(!store.set(this.dataKey(),{runners:this.runners,tracks:tr,saved:Date.now()}))toast('Mémoire pleine : exporte les résultats.',true)},
+  saveSoon(){if(Date.now()-this.lastSave>15000)this.saveData()},
+  /* trace la plus complète : trace envoyée par le coureur + positions reçues en direct */
+  fullTrack(pid){const a=(this.tracks[pid]||[]).concat(this.trails[pid]||[]).sort((x,y)=>x[2]-y[2]),o=[];
+    for(const q of a){const l=o[o.length-1];if(!l||q[2]-l[2]>=1500)o.push(q)}return o},
+  save(){const all=store.get(K.orgs,[]),i=all.findIndex(x=>x.code===this.o.code);if(i>=0)all[i]=this.o;else all.push(this.o);store.set(K.orgs,all)},
+  resume(code){const o=store.get(K.orgs,[]).find(x=>x.code===code);if(o)this.open(o)},
+  async open(o){
+    this.o=o;this.runners={};this.trails={};this.tracks={};this.focus=null;Replay.close(true);show('org');
+    const sd=store.get('oguide.orgdata.'+o.code,null);
+    if(sd){this.runners=sd.runners||{};Object.entries(sd.tracks||{}).forEach(([pid,e])=>{this.tracks[pid]=decTrack(e)})}
+    $('#orgTitle').textContent=o.name;const tr=o.kind==='train';
+    $('#orgRank').textContent=tr?'📊 Bilan':'📊 Classement';$('#orgClose').textContent=tr?'⏹ Terminer':'🏁 Clore';
+    if(!this.map){this.map=makeMap($('#orgMap'),'org');this.lay=L.layerGroup().addTo(this.map);this.runLay=L.layerGroup().addTo(this.map)}else setMapStyle(this.map);
+    const b=tr?(this.lay.clearLayers(),null):drawCourse(this.lay,o.course);this.fitted=false;
+    setTimeout(()=>{this.map.invalidateSize();if(b)this.map.fitBounds(b,{padding:[30,30],maxZoom:18});else if(tr){this.fitted=this.fitAll();if(!this.fitted&&GPS.last)this.map.setView([GPS.last.lat,GPS.last.lon],15)}},80);
+    this.render();
+    if(o.status==='deleted'){$('#orgNet').textContent='🗄';$('#orgNet').title='Course archivée sur cet appareil';return}
+    const{key,tid}=await deriveRace(o.code);this.key=key;this.base='shco/v1/'+tid;
+    if(this.m)this.m.close();const m=this.m=new Mqtt(BROKERS[o.code[0]]);
+    m.onstate=c=>{$('#orgNet').textContent=c?'📡':'📡✖';$('#orgNet').title=c?'Connecté au relais':'Relais injoignable, nouvel essai…';if(c)this.publishRace()};
+    m.onMessage(async(topic,pl)=>{
+      if(!pl.length)return;
+      if(topic.startsWith(this.base+'/t/')){try{const t=await unseal(this.key,pl);if(t&&t.pid){this.tracks[t.pid]=mergeTracks(this.tracks[t.pid],decTrack(t));this.saveSoon()}}catch(e){}return}
+      if(!topic.startsWith(this.base+'/p/'))return;
+      try{const st=await unseal(this.key,pl);if(st&&st.pid)this.onRunner(st)}catch(e){}
+    });
+    m.subscribe(this.base+'/p/+');m.subscribe(this.base+'/t/+');m.connect();
+    clearInterval(this.tickI);this.tickI=setInterval(()=>{if(current==='org')this.render()},1000);
+  },
+  leave(){Replay.close(true);clearInterval(this.tickI);if(this.o&&Object.keys(this.runners).length)this.saveData();if(this.m){this.m.close();this.m=null}},
+  raceMsg(){const o=this.o,c=o.course;return{v:1,type:'race',kind:o.kind||'race',name:o.name,course:c?{mode:c.mode,timeLimit:c.timeLimit,penalty:c.penalty,points:c.points}:null,opts:o.opts,status:o.status,startAt:o.startAt,created:o.created}},
+  async publishRace(){if(!this.m||!this.key||this.o.status==='deleted')return;this.m.publish(this.base+'/race',await seal(this.key,this.raceMsg()),true)},
+  onRunner(st){
+    const prev=this.runners[st.pid];if(prev&&prev.upd>st.upd)return;
+    this.runners[st.pid]=st;
+    if(st.pos){const tr=this.trails[st.pid]||(this.trails[st.pid]=[]),l=tr[tr.length-1];if(!l||l[2]!==st.pos.t){tr.push([st.pos.lat,st.pos.lon,st.pos.t]);if(tr.length>400)tr.shift()}}
+    if(this.isTrain()&&!this.fitted&&st.pos&&this.map){this.fitted=true;this.map.setView([st.pos.lat,st.pos.lon],Math.max(this.map.getZoom(),16))}
+    this.saveSoon();if(current==='org')this.render();
+  },
+  color(pid){let h=0;for(const ch of pid)h=(h*31+ch.charCodeAt(0))>>>0;return PALETTE[h%PALETTE.length]},
+  ptById(id){return this.o.course.points.find(p=>p.id===id)},
+  info(st){
+    if(this.isTrain())return this.trainInfo(st);
+    const c=this.o.course,now=Date.now(),pts=c.points,ctrls=pts.filter(p=>p.type==='control');
+    const vis=(st.visited||[]).map(v=>Object.assign({},v,{p:pts.find(p=>p.id===v.id)})).filter(v=>v.p);
+    const done=vis.filter(v=>v.p.type==='control').length,last=vis[vis.length-1];
+    const el=st.startAt?((st.finishAt||now)-st.startAt):null;
+    const tr=this.trails[st.pid]||[],age=st.upd?now-st.upd:Infinity;
+    let immobile=false;if(st.status==='running'&&tr.length>2){const recent=tr.filter(q=>now-q[2]<300000);if(recent.length>2&&now-recent[0][2]>240000){const c0={lat:recent[0][0],lon:recent[0][1]};immobile=recent.every(q=>dist(c0,{lat:q[0],lon:q[1]})<25)}}
+    return{done,n:ctrls.length,last,el,age,stale:age>90000&&(st.status==='running'||st.status==='waiting'),immobile,missing:ctrls.length-done,manual:vis.some(v=>v.m==='manual')};
+  },
+  trainInfo(st){
+    const now=Date.now(),age=st.upd?now-st.upd:Infinity,stale=age>90000&&st.status==='running';
+    const end=st.finishAt||(stale?st.upd:now),el=st.startAt?Math.max(0,end-st.startAt):null,ft=this.fullTrack(st.pid);
+    const d=Math.max(st.dist||0,trackDist(ft)),tr=this.trails[st.pid]||[];
+    let immobile=false;if(st.status==='running'){const recent=tr.filter(q=>now-q[2]<300000);if(recent.length>2&&now-recent[0][2]>240000){const c0={lat:recent[0][0],lon:recent[0][1]};immobile=recent.every(q=>dist(c0,{lat:q[0],lon:q[1]})<25)}}
+    return{train:true,el,dist:d,speed:el>30000&&d>0?d/(el/1000):null,age,stale,immobile,n:ft.length,done:0,missing:0,last:null,manual:false};
+  },
+  speedTxt(i){if(!i.speed)return'—';const kmh=i.speed*3.6,pace=1000/i.speed;return kmh.toFixed(1).replace('.',',')+' km/h'+(kmh<25?' · '+fmtTime(pace*1000)+'/km':'')},
+  ranking(){
+    if(this.isTrain()){const g=s=>s==='running'?0:1;return Object.values(this.runners).map(st=>({st,i:this.info(st)})).sort((a,b)=>g(a.st.status)-g(b.st.status)||a.st.name.localeCompare(b.st.name,'fr'))}
+    const sc=this.o.course.mode==='score',arr=Object.values(this.runners).map(st=>({st,i:this.info(st)}));
+    const grp=s=>({finished:0,running:1,waiting:2,closed:3,abandoned:4}[s]??5);
+    arr.sort((a,b)=>{const g=grp(a.st.status)-grp(b.st.status);if(g)return g;
+      if(sc){if((b.st.net||0)!==(a.st.net||0))return(b.st.net||0)-(a.st.net||0);return(a.i.el||0)-(b.i.el||0)}
+      if(a.st.status==='finished'){if(a.i.missing!==b.i.missing)return a.i.missing-b.i.missing;return(a.i.el||0)-(b.i.el||0)}
+      if(b.i.done!==a.i.done)return b.i.done-a.i.done;return((a.i.last&&a.i.last.el)||0)-((b.i.last&&b.i.last.el)||0)});
+    return arr;
+  },
+  stLabel(st,i){
+    if(this.isTrain())return st.status==='running'?'📍 suivi actif':st.status==='stopped'?'⏹ arrêté par le pratiquant':'⏹ séance terminée';
+    if(st.status==='waiting')return'⏳ en attente';if(st.status==='abandoned')return'✖ abandon';if(st.status==='closed')return'⏹ arrêtée';
+    if(st.status==='finished')return'🏁 arrivé';return'🏃 en course';
+  },
+  render(){
+    const o=this.o;if(!o||Replay.on)return;
+    $('#orgStatus').textContent=this.statusLabel(o.status);$('#orgStatus').className='tag st-'+o.status;
+    $('#orgStatus').textContent=this.statusLabel(o.status,o.kind);
+    $('#orgLaunch').hidden=!(o.opts.startType==='mass'&&o.status==='open');$('#orgClose').hidden=o.status==='closed'||o.status==='deleted';$('#orgQR').hidden=o.status==='deleted';
+    if(this.isTrain()){this.renderTrain();return}
+    const sc=o.course.mode==='score',rk=this.ranking(),now=Date.now();
+    const cnt={running:0,finished:0,waiting:0};rk.forEach(r=>{if(cnt[r.st.status]!=null)cnt[r.st.status]++});
+    const raceEl=o.startAt?now-o.startAt:null;
+    $('#orgCount').innerHTML=`<b>${rk.length}</b> coureur${rk.length>1?'s':''} · ${cnt.running} en course · ${cnt.finished} arrivé${cnt.finished>1?'s':''} · ${cnt.waiting} en attente${raceEl!=null&&o.status==='started'?` · ⏱ ${fmtTime(raceEl)}`:''}`;
+    $('#orgList').innerHTML=rk.length?rk.map(({st,i},k)=>{
+      const col=this.color(st.pid),lastTxt=i.last?(i.last.p.type==='finish'?'arrivée':i.last.p.type==='start'?'départ':'balise '+shortLabel(o.course.points,o.course.points.indexOf(i.last.p)))+' à '+fmtTime(i.last.el):'—';
+      const alerts=(i.stale?`<span class="al">📡 sans nouvelles depuis ${fmtTime(i.age)}</span>`:'')+(i.immobile?'<span class="al">⚠ immobile depuis 4 min</span>':'')+(i.manual?'<span class="al soft">validation manuelle</span>':'');
+      return`<li><button type="button" class="runner${this.focus===st.pid?' sel':''}" data-pid="${st.pid}"><span class="dot" style="background:${col}">${k+1}</span><span class="rn"><b>${esc(st.name)}</b><small>${this.stLabel(st,i)} · ${sc?`${st.net||0} pts · `:''}${i.done}/${i.n} balises · dernière : ${lastTxt}</small>${alerts?`<small>${alerts}</small>`:''}</span><span class="rt">${i.el!=null?fmtTime(i.el):'—'}<small>${st.bat!=null?'🔋'+st.bat+'%':''}${st.app==='android'?' 🤖':''}${profIcon(st)}</small></span></button></li>`}).join('')
+      :`<li class="hint">Personne n'a encore rejoint la course. Montre le QR code ou donne le code <b>${fmtCode(o.code)}</b>.</li>`;
+    this.drawRunners();
+  },
+  renderTrain(){
+    const o=this.o,rk=this.ranking(),act=rk.filter(r=>r.st.status==='running').length,ses=o.startAt?Date.now()-o.startAt:null;
+    $('#orgCount').innerHTML=`<b>${rk.length}</b> pratiquant${rk.length>1?'s':''} · ${act} suivi${act>1?'s':''} actif${act>1?'s':''}${ses!=null&&o.status==='open'?` · séance depuis ${fmtTime(ses)}`:''}`;
+    $('#orgList').innerHTML=rk.length?rk.map(({st,i})=>{
+      const col=this.color(st.pid),ini=st.name.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const alerts=(i.stale?`<span class="al">📡 sans nouvelles depuis ${fmtTime(i.age)}</span>`:'')+(i.immobile?'<span class="al">⚠ immobile depuis 4 min</span>':'');
+      return`<li><button type="button" class="runner${this.focus===st.pid?' sel':''}" data-pid="${st.pid}"><span class="dot" style="background:${col}">${esc(ini)}</span><span class="rn"><b>${esc(st.name)}</b><small>${this.stLabel(st,i)} · ${fmtDist(i.dist)} · ${this.speedTxt(i)}</small>${alerts?`<small>${alerts}</small>`:''}</span><span class="rt">${i.el!=null?fmtTime(i.el):'—'}<small>${st.bat!=null?'🔋'+st.bat+'%':''}${st.app==='android'?' 🤖':''}${profIcon(st)}</small></span></button></li>`}).join('')
+      :`<li class="hint">Personne n'a encore rejoint la séance. Montre le QR code ou donne le code <b>${fmtCode(o.code)}</b>.</li>`;
+    this.drawRunners();
+  },
+  drawRunners(){
+    this.runLay.clearLayers();const now=Date.now();
+    Object.values(this.runners).forEach(st=>{
+      if(!st.pos)return;const col=this.color(st.pid),i=this.info(st),tr=this.fullTrack(st.pid);
+      if(tr.length>1)L.polyline(tr.map(q=>[q[0],q[1]]),{color:col,weight:3,opacity:.6,interactive:false}).addTo(this.runLay);
+      const ini=st.name.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      L.marker([st.pos.lat,st.pos.lon],{icon:L.divIcon({className:'rmk'+(i.stale?' stale':'')+(i.immobile?' alert':'')+(this.focus===st.pid?' sel':''),html:`<span style="background:${col}">${esc(ini)}</span><em>${esc(st.name)}</em>`,iconSize:[34,34],iconAnchor:[17,17]}),zIndexOffset:this.focus===st.pid?3000:1000})
+        .on('click',()=>this.select(st.pid)).addTo(this.runLay);
+    });
+  },
+  select(pid){
+    this.focus=this.focus===pid?null:pid;const st=this.runners[pid];
+    if(this.focus&&st&&st.pos)this.map.setView([st.pos.lat,st.pos.lon],Math.max(this.map.getZoom(),17));
+    this.render();
+    if(this.focus&&st)this.showRunner(st);
+  },
+  showRunner(st){
+    if(this.isTrain()){
+      const i=this.info(st),box=document.createElement('div');
+      box.innerHTML=`<p><b>${esc(st.name)}</b> · ${this.stLabel(st,i)}</p>
+        <table class="res"><tbody><tr><td>Durée</td><td class="num">${i.el!=null?fmtTime(i.el):'—'}</td></tr><tr><td>Distance</td><td class="num">${fmtDist(i.dist)}</td></tr><tr><td>Vitesse moyenne</td><td class="num">${this.speedTxt(i)}</td></tr>
+        <tr><td>Dernière position</td><td class="num">${st.pos?'il y a '+fmtTime(Date.now()-st.pos.t):'—'}</td></tr><tr><td>Batterie</td><td class="num">${st.bat!=null?st.bat+' %':'—'}</td></tr><tr><td>Points GPS</td><td class="num">${i.n}</td></tr></tbody></table>
+        <div class="row" style="margin-top:1rem"><button type="button" id="srGpx">🗺 Trace GPX</button></div>`;
+      Sheet.show('Pratiquant',box);$('#srGpx').onclick=()=>this.exportGPX([st.pid]);return}
+    const c=this.o.course,i=this.info(st),sc=c.mode==='score';
+    const rows=(st.visited||[]).map(v=>{const p=c.points.find(q=>q.id===v.id);if(!p)return'';const lbl=p.type==='start'?'▲ Départ':p.type==='finish'?'🏁 Arrivée':'Balise '+shortLabel(c.points,c.points.indexOf(p));
+      return`<tr><td>${lbl}${v.m==='manual'?' <span class="tag manual">manuel</span>':''}</td><td class="num">${p.type==='start'?'–':fmtTime(v.leg)}</td><td class="num">${fmtTime(v.el)}</td>${sc?`<td class="num">${p.type==='control'?ptsOf(p):''}</td>`:''}</tr>`}).join('');
+    const box=document.createElement('div');
+    box.innerHTML=`<p><b>${esc(st.name)}</b> · ${this.stLabel(st,i)}</p><p class="hint">${i.done}/${i.n} balises${sc?` · ${st.score||0} pts − ${st.pen||0} = <b>${st.net||0}</b>`:''}${i.el!=null?' · '+fmtTime(i.el):''}${st.pos?` · position il y a ${fmtTime(Date.now()-st.pos.t)}`:''}</p>
+      <table class="res"><thead><tr><th>Balise</th><th class="num">Inter.</th><th class="num">Cumul</th>${sc?'<th class="num">Pts</th>':''}</tr></thead><tbody>${rows||'<tr><td colspan="4">Aucune balise validée</td></tr>'}</tbody></table>`;
+    Sheet.show('Coureur',box);
+  },
+  exportGPX(pids){
+    const o=this.o,xe=s=>esc(s);pids=pids||Object.keys(this.runners);
+    const trk=pids.map(pid=>{const st=this.runners[pid],tr=this.fullTrack(pid);if(!st||tr.length<2)return'';
+      return`<trk><name>${xe(st.name)}</name><trkseg>\n${tr.map(q=>`<trkpt lat="${q[0].toFixed(6)}" lon="${q[1].toFixed(6)}"><time>${new Date(q[2]).toISOString()}</time></trkpt>`).join('\n')}\n</trkseg></trk>`}).filter(Boolean);
+    if(!trk.length){toast('Pas encore de trace à exporter.',true);return}
+    const gpx=`<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="O'Guide" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${xe(o.name)}</name><time>${o.created}</time></metadata>\n${trk.join('\n')}\n</gpx>`;
+    saveFile(slug('traces_'+o.name+(pids.length===1&&this.runners[pids[0]]?'_'+this.runners[pids[0]].name:''))+'.gpx',gpx,'application/gpx+xml');
+  },
+  async launch(){
+    const n=Object.values(this.runners).filter(r=>r.status==='waiting').length;
+    const v=await modal({title:'Lancer le départ ?',body:`<p>${n} coureur${n>1?'s':''} en attente. Tous les chronos démarrent maintenant.</p>`,buttons:[{label:'▶ Lancer',value:true,primary:true},{label:'Annuler',value:false}]});
+    if(!v)return;this.o.status='started';this.o.startAt=Date.now();this.save();await this.publishRace();Snd.fanfare();vib([300,100,300]);toast('🏁 Départ lancé !');this.render();
+  },
+  async close(){
+    const tr=this.isTrain();
+    const v=await modal(tr?{title:'Terminer la séance ?',body:'<p>Le suivi s\'arrête sur tous les téléphones. Le bilan et le replay restent disponibles.</p>',buttons:[{label:'⏹ Terminer',value:true,danger:true},{label:'Annuler',value:false}]}
+      :{title:'Clore la course ?',body:'<p>Les coureurs encore en course sont arrêtés et leurs temps enregistrés.</p>',buttons:[{label:'🏁 Clore',value:true,danger:true},{label:'Annuler',value:false}]});
+    if(!v)return;this.o.status='closed';this.save();await this.publishRace();toast(tr?'Séance terminée':'Course close');setTimeout(()=>{if(this.o)this.saveData()},6000);this.render();
+  },
+  showQR(){
+    const o=this.o,url=joinURL(o.code),q=qrcode(0,'M');q.addData(url);q.make();
+    const box=document.createElement('div');box.className='qrbox';
+    box.innerHTML=`<div class="qr">${q.createSvgTag({cellSize:8,margin:2,scalable:true})}</div><p class="code">${fmtCode(o.code)}</p>
+      <p class="hint">${o.kind==='train'?'Les pratiquants':'Les coureurs'} scannent ce QR code avec l'appareil photo, ou choisissent « Rejoindre » sur l'accueil et tapent le code.</p><p class="hint url">${esc(url)}</p>
+      <div class="row"><button type="button" id="qrShare">📤 Partager le lien</button><button type="button" id="qrCopy">📋 Copier</button></div>`;
+    Sheet.show('Rejoindre : '+o.name,box);
+    $('#qrCopy').onclick=async()=>{try{await navigator.clipboard.writeText(url);toast('Lien copié')}catch(e){toast('Copie impossible : '+url,true)}};
+    $('#qrShare').onclick=async()=>{const text=`Rejoins ${o.kind==='train'?'la séance':'la course'} « ${o.name} » sur O'Guide : ${url} (code ${fmtCode(o.code)})`;
+      try{if(NATIVE)await P.share.share({title:'O\'Guide',text,dialogTitle:'Envoyer le lien'});else if(navigator.share)await navigator.share({title:'O\'Guide',text});else{await navigator.clipboard.writeText(text);toast('Lien copié')}}catch(e){}};
+  },
+  showRanking(){
+    if(this.isTrain()){
+      const rk=this.ranking(),box=document.createElement('div');
+      box.innerHTML=`<table class="res"><thead><tr><th>Nom</th><th class="num">Durée</th><th class="num">Distance</th><th class="num">Vitesse</th></tr></thead><tbody>${rk.map(({st,i})=>`<tr data-pid="${st.pid}"><td>${esc(st.name)}<br><small class="muted">${this.stLabel(st,i)}</small></td><td class="num">${i.el!=null?fmtTime(i.el):'—'}</td><td class="num">${fmtDist(i.dist)}</td><td class="num">${i.speed?(i.speed*3.6).toFixed(1).replace('.',',')+' km/h':'—'}</td></tr>`).join('')||'<tr><td colspan="4">Personne pour l\'instant</td></tr>'}</tbody></table>
+        <div class="row" style="margin-top:1rem"><button type="button" id="rkCsv">⬇ Bilan CSV (tableur)</button><button type="button" id="rkGpx">🗺 Traces GPX</button></div>`;
+      Sheet.show('Bilan de la séance',box);
+      box.querySelector('tbody').addEventListener('click',e=>{const tr=e.target.closest('[data-pid]');if(tr){Sheet.hide();this.select(tr.dataset.pid)}});
+      $('#rkCsv').onclick=()=>this.exportCSV();$('#rkGpx').onclick=()=>this.exportGPX();return}
+    const sc=this.o.course.mode==='score',rk=this.ranking(),box=document.createElement('div');
+    box.innerHTML=`<table class="res"><thead><tr><th>#</th><th>Nom</th><th class="num">${sc?'Points':'Balises'}</th><th class="num">Temps</th></tr></thead><tbody>${rk.map(({st,i},k)=>`<tr data-pid="${st.pid}"><td>${st.status==='finished'?k+1:'–'}</td><td>${esc(st.name)}<br><small class="muted">${this.stLabel(st,i)}</small></td><td class="num">${sc?(st.net||0):i.done+'/'+i.n}</td><td class="num">${i.el!=null?fmtTime(i.el):'—'}</td></tr>`).join('')||'<tr><td colspan="4">Aucun coureur</td></tr>'}</tbody></table>
+      <div class="row" style="margin-top:1rem"><button type="button" id="rkCsv">⬇ Résultats CSV (tableur)</button></div>`;
+    Sheet.show('Classement',box);
+    box.querySelector('tbody').addEventListener('click',e=>{const tr=e.target.closest('[data-pid]');if(tr){Sheet.hide();this.select(tr.dataset.pid)}});
+    $('#rkCsv').onclick=()=>this.exportCSV();
+  },
+  exportCSV(){
+    if(this.isTrain()){
+      const d=t=>t?new Date(t).toLocaleString('fr-FR'):'';
+      const head=['Nom','Statut','Début','Fin','Durée','Distance (km)','Vitesse moyenne (km/h)','Allure moyenne (min/km)','Points GPS'];
+      const lines=this.ranking().map(({st,i})=>[st.name,this.stLabel(st,i).replace(/^\S+\s/,''),d(st.startAt),d(st.finishAt),i.el!=null?fmtTime(i.el):'',(i.dist/1000).toFixed(2).replace('.',','),i.speed?(i.speed*3.6).toFixed(1).replace('.',','):'',i.speed?fmtTime(1e6/i.speed):'',i.n].map(x=>String(x).replace(/;/g,',')).join(';'));
+      saveFile(slug('bilan_'+this.o.name)+'.csv','\ufeff'+[head.join(';'),...lines].join('\n'),'text/csv');return}
+    const c=this.o.course,sc=c.mode==='score',ctrls=c.points.filter(p=>p.type!=='start');
+    const head=['Rang','Nom','Statut','Temps','Balises',...(sc?['Points','Pénalité','Net']:['Manquants']),...ctrls.map(p=>p.type==='finish'?'Arrivée':'Balise '+shortLabel(c.points,c.points.indexOf(p)))];
+    const lines=this.ranking().map(({st,i},k)=>{const vm={};(st.visited||[]).forEach(v=>vm[v.id]=v);
+      return[st.status==='finished'?k+1:'',st.name,this.stLabel(st,i).replace(/^\S+\s/,''),i.el!=null?fmtTime(i.el):'',i.done+'/'+i.n,...(sc?[st.score||0,st.pen||0,st.net||0]:[i.missing]),...ctrls.map(p=>vm[p.id]?fmtTime(vm[p.id].el):'')].map(x=>String(x).replace(/;/g,',')).join(';')});
+    saveFile(slug('resultats_'+this.o.name)+'.csv','﻿'+[head.join(';'),...lines].join('\n'),'text/csv');
+  },
+  async more(){
+    const del=this.o.status==='deleted';
+    const tr=this.isTrain();
+    const v=await modal({title:(tr?'Séance : ':'Course : ')+this.o.name,body:`<p class="hint">Code ${fmtCode(this.o.code)} · ${this.statusLabel(this.o.status,this.o.kind)}</p>`,buttons:[{label:tr?'⬇ Bilan CSV (tableur)':'⬇ Résultats CSV (tableur)',value:'csv'},{label:'🗺 Traces GPX de tous',value:'gpx'},del?{label:'🗑 Supprimer de cet appareil (résultats et replay)',value:'local',danger:true}:{label:tr?'🧹 Effacer la séance du relais':'🧹 Effacer la course du relais',value:'purge',danger:true},{label:'Fermer',value:null,primary:true}]});
+    if(v==='csv')this.exportCSV();
+    if(v==='gpx')this.exportGPX();
+    if(v==='local'){const ok=await modal({title:`Supprimer cette ${tr?'séance':'course'} de l'appareil ?`,body:'<p>Les résultats et le replay seront perdus. Exporte le CSV avant si besoin.</p>',buttons:[{label:'🗑 Supprimer',value:true,danger:true},{label:'Annuler',value:false}]});
+      if(ok){store.del(this.dataKey());store.set(K.orgs,store.get(K.orgs,[]).filter(x=>x.code!==this.o.code));this.o=null;toast((tr?'Séance':'Course')+' supprimée de l\'appareil');show('home')}return}
+    if(v==='purge'){
+      const ok=await modal({title:`Effacer la ${tr?'séance':'course'} du relais ?`,body:`<p>Plus personne ne pourra la rejoindre et les données sont retirées du relais. Le bilan et le replay restent sur cet appareil.</p>`,buttons:[{label:'🧹 Effacer',value:true,danger:true},{label:'Annuler',value:false}]});
+      if(!ok)return;const e=new Uint8Array(0);
+      this.saveData();
+      Object.keys(this.runners).forEach(pid=>{this.m.publish(this.base+'/p/'+pid,e,true);this.m.publish(this.base+'/t/'+pid,e,true)});this.m.publish(this.base+'/race',e,true);
+      this.o.status='deleted';this.save();toast((tr?'Séance':'Course')+' effacée du relais : résultats et replay restent sur cet appareil');setTimeout(()=>show('home'),900);
+    }
+  }
+};
+$('#orgList').addEventListener('click',e=>{const b=e.target.closest('[data-pid]');if(b)Org.select(b.dataset.pid)});
+$('#orgLaunch').onclick=()=>Org.launch();
+$('#orgClose').onclick=()=>Org.close();
+$('#orgQR').onclick=()=>Org.showQR();
+$('#orgRank').onclick=()=>Org.showRanking();
+$('#orgMore').onclick=()=>Org.more();
+$('#orgFit').onclick=()=>{if(!Org.fitAll())toast('Personne à afficher pour l\'instant.',true)};
+
+/* ---------------- Replay de la course ---------------- */
+const Replay={on:false,T:0,t0:0,t1:0,playing:false,lay:null,data:[],hidden:new Set(),timer:null,
+  open(){
+    const o=Org.o;if(!o)return;
+    const data=Object.values(Org.runners).map(st=>({st,tr:Org.fullTrack(st.pid),col:Org.color(st.pid)})).filter(d=>d.tr.length>1);
+    data.forEach(d=>{let c=0;d.cum=d.tr.map((q,k)=>{if(k){const a=d.tr[k-1],s=dist({lat:a[0],lon:a[1]},{lat:q[0],lon:q[1]});if(s/Math.max(1,(q[2]-a[2])/1000)<20)c+=s}return c})});
+    if(!data.length){toast('Pas encore de trajets à rejouer : les traces arrivent au fil de l\'activité.',true);return}
+    let t0=Infinity,t1=0;data.forEach(d=>{t0=Math.min(t0,d.tr[0][2]);t1=Math.max(t1,d.tr[d.tr.length-1][2])});
+    if(o.startAt&&o.startAt-30000>t0&&o.startAt<t1)t0=o.startAt-30000;
+    Object.assign(this,{data,t0,t1,T:t0,on:true,playing:false});this.hidden=new Set();
+    if(!this.lay)this.lay=L.layerGroup().addTo(Org.map);Org.runLay.clearLayers();
+    $('#orgReplay').hidden=false;$('#orgLive').hidden=true;$('#orgbarLive').hidden=true;
+    this.legend();this.draw();
+    const b=L.latLngBounds([]);data.forEach(d=>d.tr.forEach(q=>b.extend([q[0],q[1]])));if(o.course)o.course.points.forEach(p=>b.extend([p.lat,p.lon]));
+    if(b.isValid())Org.map.fitBounds(b,{padding:[30,30],maxZoom:18});
+  },
+  close(silent){if(!this.on)return;this.pause();this.on=false;if(this.lay)this.lay.clearLayers();$('#orgReplay').hidden=true;$('#orgLive').hidden=false;$('#orgbarLive').hidden=false;if(!silent)Org.render()},
+  play(){if(this.T>=this.t1)this.T=this.t0;this.playing=true;$('#rpPlay').textContent='⏸';clearInterval(this.timer);
+    this.timer=setInterval(()=>{this.T=Math.min(this.t1,this.T+100*this.speed());this.draw();if(this.T>=this.t1)this.pause()},100)},
+  pause(){this.playing=false;clearInterval(this.timer);const b=$('#rpPlay');if(b)b.textContent='▶'},
+  speed(){return parseFloat($('#rpSpeed').value)||30},
+  at(tr,T){let lo=0,hi=tr.length-1;if(T<tr[0][2])return null;while(lo<hi){const mid=(lo+hi+1)>>1;if(tr[mid][2]<=T)lo=mid;else hi=mid-1}
+    const a=tr[lo],b=tr[lo+1];if(!b||b[2]-a[2]>120000)return{i:lo,ll:[a[0],a[1]]};const k=(T-a[2])/(b[2]-a[2]);return{i:lo,ll:[a[0]+(b[0]-a[0])*k,a[1]+(b[1]-a[1])*k]}},
+  draw(){
+    if(!this.on)return;this.lay.clearLayers();const o=Org.o,T=this.T;
+    this.data.forEach(d=>{
+      const p=this.at(d.tr,T),c=document.getElementById('rpc-'+d.st.pid);
+      if(c){if(o.course){const n=(d.st.visited||[]).filter(v=>{const q=Org.ptById(v.id);return q&&q.type==='control'&&d.st.startAt&&d.st.startAt+v.el<=T}).length;c.textContent=n+'/'+o.course.points.filter(q=>q.type==='control').length}
+        else c.textContent=fmtDist(p?d.cum[p.i]+dist({lat:d.tr[p.i][0],lon:d.tr[p.i][1]},{lat:p.ll[0],lon:p.ll[1]}):0)}
+      if(this.hidden.has(d.st.pid)||!p)return;
+      const tr=d.tr.slice(0,p.i+1).map(q=>[q[0],q[1]]);tr.push(p.ll);
+      if(tr.length>1)L.polyline(tr,{color:d.col,weight:4,opacity:.8,interactive:false}).addTo(this.lay);
+      const ini=d.st.name.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      L.marker(p.ll,{icon:L.divIcon({className:'rmk',html:`<span style="background:${d.col}">${esc(ini)}</span><em>${esc(d.st.name)}</em>`,iconSize:[34,34],iconAnchor:[17,17]}),interactive:false,zIndexOffset:1000}).addTo(this.lay);
+    });
+    const ref=o.startAt||this.t0,el=T-ref;
+    $('#rpTime').textContent=`${el<0?(o.course?'avant le départ −':'−')+fmtTime(-el):'⏱ '+fmtTime(el)} · ${new Date(T).toLocaleTimeString('fr-FR')}`;
+    $('#rpSlider').value=String(Math.round((T-this.t0)/Math.max(1,this.t1-this.t0)*1000));
+  },
+  legend(){
+    const c=Org.o.course,n=c?c.points.filter(p=>p.type==='control').length:0;
+    $('#rpLegend').innerHTML=this.data.map(d=>`<li><label class="chk"><input type="checkbox" data-rp="${d.st.pid}" checked><span class="dot" style="background:${d.col}"></span>${esc(d.st.name)}<span class="muted" id="rpc-${d.st.pid}">${c?'0/'+n:'0 m'}</span></label></li>`).join('');
+  }
+};
+$('#orgReplayBtn').onclick=()=>Replay.open();
+$('#rpPlay').onclick=()=>{if(Replay.playing)Replay.pause();else Replay.play()};
+$('#rpExit').onclick=()=>Replay.close();
+$('#rpSlider').addEventListener('input',e=>{Replay.T=Replay.t0+(Replay.t1-Replay.t0)*(+e.target.value/1000);Replay.draw()});
+$('#rpLegend').addEventListener('change',e=>{const c=e.target.closest('[data-rp]');if(!c)return;if(c.checked)Replay.hidden.delete(c.dataset.rp);else Replay.hidden.add(c.dataset.rp);Replay.draw()});
+
 /* ---------------- Démarrage ---------------- */
 Voice.init();applySimUI();Home.render();
 if(!Compass.needsPerm)Compass.enable();
 if(NATIVE){$('#dtDownload').textContent='💾 Enregistrer le GPX';$('#rsDownload').textContent='💾 Enregistrer (GPX)';$('#rsCopy').textContent='📤 Envoyer le résumé'}
 try{history.replaceState({s:'home'},'')}catch(e){}
 if(!NATIVE&&'serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
-(async()=>{const dr=store.get(K.draft,null);if(dr&&dr.points&&dr.points.length){
+const joinHash=()=>{const m=/^#join-([0-9A-Za-z-]+)/.exec(location.hash);if(!m)return null;try{history.replaceState({s:'home'},'',location.pathname+location.search)}catch(e){}return m[1]};
+window.addEventListener('hashchange',()=>{const c=joinHash();if(c)Join.open(c)});
+(async()=>{
+  const jc=joinHash();if(jc){Join.open(jc);return}
+  if(store.get(K.follow,null)){Follow.resume();return}
+  const act=store.get(K.active,null);
+  if(act&&act.course){Voice.say('Une épreuve n\'est pas terminée. Touchez Reprendre l\'épreuve pour continuer.');
+    const v=await modal({title:'Épreuve en cours',body:`<p><b>${esc(act.course.name)}</b></p><p class="hint">Cette épreuve n'est pas terminée.</p>`,buttons:[{label:'⏯ Reprendre l\'épreuve',value:true,primary:true},{label:'Plus tard',value:false}]});
+    if(v)Run.resumeActive();return}
+  const dr=store.get(K.draft,null);if(dr&&dr.points&&dr.points.length){
   const v=await modal({title:'Parcours en cours de création',body:`<p>Un brouillon avec ${dr.points.length} point(s) a été retrouvé.</p>`,buttons:[{label:'Reprendre la création',value:true,primary:true},{label:'Plus tard',value:false}]});
   if(v){Create.draft=dr;Create.open()}}})();
-window.OGuide={RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
+window.OGuide={Org,OrgSetup,TrainSetup,Follow,Join,Replay,RaceLink,store,K,trackDist,RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
 })();
 </script>
 </body>

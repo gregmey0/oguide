@@ -6,6 +6,9 @@ Application de course d'orientation pour personnes **non-voyantes et malvoyantes
 - **Guidage** : distance et azimut (ou direction horaire) annoncés à intervalle régulier, bips d'approche qui accélèrent, validation automatique de la balise, carte très contrastée pour les malvoyants.
 - **Mode poche** : écran tactile verrouillé, le guidage continue.
 - **Partage** des parcours et des résultats en **GPX** (import / export).
+- **Courses organisées** : l'organisateur crée une course (code + QR code), donne le départ groupé ou laisse partir chacun, suit tous les coureurs sur la carte en direct (balises, temps, batterie, alertes), puis classement, CSV, traces GPX et replay. Chaque coureur garde son guidage O'Guide.
+- **Suivi en pratique libre** : l'encadrant crée une séance sans parcours ; les pratiquants rejoignent et rangent leur téléphone, il les suit en direct puis en replay (distance, vitesse, bilan CSV, traces GPX).
+- **Compatible Shadow CO** : même relais chiffré, des coureurs voyants (Shadow CO) et non-voyants ou malvoyants (O'Guide) peuvent faire la même course en ordre imposé.
 
 ## Installer
 
@@ -14,7 +17,7 @@ Application de course d'orientation pour personnes **non-voyantes et malvoyantes
 
 ## Développement
 
-- Sources : `src/` (`app.js`, `style.css`, `body.html`). `python3 build.py` produit `docs/` (version web, GitHub Pages) et `www/` (contenu de l'appli).
+- Sources : `src/` (`app.js`, `live.js` pour les courses organisées et le suivi, `style.css`, `body.html`). `python3 build.py` produit `docs/` (version web, GitHub Pages) et `www/` (contenu de l'appli).
 - Android : projet Capacitor dans `android/`. Chaque push sur `main` compile l'APK (GitHub Actions) et le publie dans **Releases**.
 - La clé `android/app/oguide-sideload.jks` est volontairement publique : elle sert seulement à ce que chaque nouvelle version s'installe par-dessus la précédente sans perdre les parcours. Pour une diffusion sur le Play Store, en créer une nouvelle et la garder secrète.
 

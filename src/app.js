@@ -1,6 +1,6 @@
 'use strict';
 (function(){
-const VERSION='1.4.0';
+const VERSION='1.5.0';
 const CAP=window.capacitorExports||null;
 const NATIVE=!!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform());
 const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications')}:{};
@@ -18,7 +18,7 @@ const store={
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},
   del(k){try{localStorage.removeItem(k)}catch(e){}}
 };
-const K={courses:'oguide.courses.v1',settings:'oguide.settings.v1',draft:'oguide.draft.v1',results:'oguide.results.v1'};
+const K={courses:'oguide.courses.v1',settings:'oguide.settings.v1',draft:'oguide.draft.v1',results:'oguide.results.v1',me:'oguide.me.v1',orgs:'oguide.orgs.v1',follow:'oguide.follow.v1',active:'oguide.active.v1'};
 const DEFAULTS={profile:'blind',voiceMode:'app',interval:30,zoneInterval:15,dirFormat:'clock',headingRef:'auto',rate:1,beep:true,approachDist:50,stereo:false,radius:10,vibrate:true,layer:'ign',contrast:'high',mapStyle:'paths-light',showRoute:false,showMe:true,showDone:false,avgSeconds:5,recordTrack:true,sim:false,_v:3};
 let settings=Object.assign({},DEFAULTS,store.get(K.settings,{}));
 const saveSettings=()=>store.set(K.settings,settings);
@@ -109,7 +109,7 @@ const Wake={lock:null,want:false,
   async on(){this.want=true;if(NATIVE){P.awake.keepAwake().catch(()=>{});return}try{if('wakeLock' in navigator&&!this.lock){this.lock=await navigator.wakeLock.request('screen');this.lock.addEventListener('release',()=>{this.lock=null})}}catch(e){}},
   off(){this.want=false;if(NATIVE){P.awake.allowSleep().catch(()=>{});return}try{if(this.lock)this.lock.release()}catch(e){}this.lock=null}
 };
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(Wake.want&&!NATIVE)Wake.on();if(current==='run'&&!NATIVE)Run.onResumeVisible()}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(Wake.want&&!NATIVE)Wake.on();if(current==='run'&&!NATIVE)Run.onResumeVisible();if(current==='run')Run.publish(true);if(current==='follow')Follow.onResumeVisible()}});
 
 /* ---------------- GPS ---------------- */
 const GPS={id:null,last:null,lastErrT:0,subs:new Set(),simPos:null,simTimer:null,simHead:null,simMoveT:0,
@@ -237,13 +237,13 @@ const LAYERS={
 const allMaps=[];
 function makeMap(el,kind){const m=L.map(el,{zoomControl:true,attributionControl:true,maxZoom:20});m._kind=kind||'map';m.createPane('paths').style.zIndex=350;
   m.attributionControl.setPrefix(false);m.setView([43.9493,4.8055],15);setMapStyle(m);allMaps.push(m);return m}
-const mapStyleOf=m=>m._kind==='create'?'map':settings.mapStyle;
+const mapStyleOf=m=>(m._kind==='create'||m._kind==='org')?'map':settings.mapStyle;
 function setMapStyle(m){
   const st=mapStyleOf(m),c=m.getContainer();c.classList.remove('ct-normal','ct-high','ct-invert','ms-light','ms-dark');
   if(m._base){m.removeLayer(m._base);m._base=null}
   if(st==='paths-dark'){c.classList.add('ms-dark');return}
   const ly=LAYERS[settings.layer]||LAYERS.osm;m._base=L.tileLayer(ly.url,ly.o).addTo(m);
-  c.classList.add(st==='paths-light'?'ms-light':'ct-'+settings.contrast);
+  c.classList.add(st==='paths-light'?'ms-light':'ct-'+(m._kind==='org'?'normal':settings.contrast));
 }
 function ctrlIcon(pts,i,{size=40,cls=''}={}){
   const p=pts[i],s=size;let svg;
@@ -416,8 +416,8 @@ function download(name,text,mime){
   setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);
 }
 async function nativeWrite(directory,path,text){const r=await P.fs.writeFile({path,data:text,directory,encoding:'utf8',recursive:true});return r.uri}
-async function saveFile(name,text){
-  if(!NATIVE){download(name,text,'application/gpx+xml');toast('GPX téléchargé');return}
+async function saveFile(name,text,mime){
+  if(!NATIVE){download(name,text,mime||'application/gpx+xml');toast((/csv/.test(mime||'')?'Fichier CSV':'GPX')+' téléchargé');return}
   try{await nativeWrite('DOCUMENTS','OGuide/'+name,text);toast('Enregistré dans Documents › OGuide : '+name)}
   catch(e){toast('Enregistrement impossible ici : utilise « Partager ».',true)}
 }
@@ -437,8 +437,8 @@ async function shareFile(name,text){
 
 /* ---------------- Navigation ---------------- */
 let current='home';
-const PARENT={create:'home',library:'home',detail:'library',setup:'home',results:'home',help:'home',run:'home'};
-const leaveHooks={create:()=>Create.close(),detail:()=>Lib.leaveDetail()};
+const PARENT={create:'home',library:'home',detail:'library',setup:'home',results:'home',help:'home',run:'home',join:'home',orgsetup:'detail',org:'home',follow:'home'};
+const leaveHooks={create:()=>Create.close(),detail:()=>Lib.leaveDetail(),org:()=>Org.leave(),join:()=>Join.leave()};
 function show(id){
   if(id===current)return;
   if(leaveHooks[current])leaveHooks[current]();
@@ -451,7 +451,10 @@ function show(id){
 window.addEventListener('popstate',()=>{
   if(current==='home')return;
   try{history.pushState({s:current},'')}catch(e){}
+  if(Sheet.open){Sheet.hide();return}
   if(current==='run'){if(RunOpts.open)RunOpts.hide();else if(!Lock.on)Run.askQuit();return}
+  if(current==='follow'&&Follow.on){toast('Le suivi continue. Pour l\'arrêter : appui long sur « Arrêter le suivi ».');Voice.say('Le suivi continue.');return}
+  if(current==='orgsetup'&&Lib.cur){Lib.openDetail(Lib.cur.id);return}
   if(current==='create'){Create.askBack();return}
   if(current==='setup'){Setup.back();return}
   const par=PARENT[current]||'home';if(par==='library')Lib.open();else show(par);
@@ -467,12 +470,22 @@ const Home={deferred:null,
     if(!NATIVE&&!window.isSecureContext)w.push('Le GPS ne fonctionne que si l\'appli est ouverte en <b>https</b>.');
     if(!NATIVE&&!('speechSynthesis' in window))w.push('Synthèse vocale indisponible dans ce navigateur : utilise Chrome (Android) ou Safari (iPhone).');
     $('#homeWarn').innerHTML=w.map(x=>`<div class="warnbox">${x}</div>`).join('')+(IOS&&!STANDALONE&&!NATIVE?`<div class="ioshint">📲 Sur iPhone : touche <span class="shr">Partager ⬆︎</span> en bas de Safari, puis « Sur l'écran d'accueil ». O'Guide s'ouvrira ensuite comme une appli, en plein écran et même sans réseau.</div>`:'');
+    const act=store.get(K.active,null),fw=store.get(K.follow,null),orgs=store.get(K.orgs,[]);let h='';
+    if(fw)h+=`<button class="primary big" id="hFollow">📍 Suivi en cours : ${esc(fw.sname||'')}</button>`;
+    if(act)h+=`<button class="primary big" id="hResume">⏯ Reprendre l'épreuve : ${esc(act.course.name)}</button>`;
+    if(orgs.length)h+=`<section class="card"><h2>Courses et séances organisées</h2>${orgs.slice(-5).reverse().map(o=>`<button type="button" data-org="${o.code}" style="justify-content:space-between"><span>${o.kind==='train'?'📍':'📡'} ${esc(o.name)}</span><span class="muted">${Org.statusLabel(o.status,o.kind)} · ${new Date(o.created).toLocaleDateString('fr-FR')}</span></button>`).join('')}</section>`;
+    $('#homeExtra').innerHTML=h;
+    const hr=$('#hResume');if(hr)hr.onclick=()=>Run.resumeActive();
+    const hf=$('#hFollow');if(hf)hf.onclick=()=>Follow.resume();
     $('#hVersion').textContent='Version '+VERSION+(NATIVE?' · application Android':' · fonctionne hors connexion une fois installée');
   }
 };
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();Home.deferred=e;$('#hInstall').hidden=false});
 $('#hInstall').onclick=async()=>{if(!Home.deferred)return;Home.deferred.prompt();try{await Home.deferred.userChoice}catch(e){}Home.deferred=null;$('#hInstall').hidden=true};
 $('#hCreate').onclick=()=>Create.begin();
+$('#hJoin').onclick=()=>Join.open();
+$('#hOrg').onclick=()=>{if(!courses.length){toast('Crée ou importe d\'abord un parcours.',true);return}Lib.open(true)};
+$('#homeExtra').addEventListener('click',e=>{const b=e.target.closest('[data-org]');if(b)Org.resume(b.dataset.org)});
 $('#hLib').onclick=()=>Lib.open();
 $('#hImport').onclick=$('#libImport').onclick=()=>{$('#gpxInput').value='';$('#gpxInput').click()};
 $('#hSettings').onclick=()=>Setup.open(null);
@@ -611,10 +624,10 @@ $('#crList').addEventListener('click',e=>{const b=e.target.closest('[data-del]')
 
 /* ---------------- Bibliothèque & détail ---------------- */
 const Lib={map:null,lay:null,cur:null,editing:false,
-  open(){
-    show('library');
+  open(forOrg){
+    show('library');this.forOrg=!!forOrg;$('#libTitle').textContent=forOrg?'Organiser : choisis un parcours':'Mes parcours';
     const L0=courses.slice().reverse();
-    $('#libList').innerHTML=L0.length?L0.map(c=>`<li><button type="button" class="card-btn" data-open="${c.id}"><b>${esc(c.name)}</b><span>${nControls(c.points)} balises · ${fmtDist(courseLength(c.points))} · ${new Date(c.created).toLocaleDateString('fr-FR')}${c.imported?' · importé':''}</span></button><button type="button" class="play" data-run="${c.id}" aria-label="Faire le parcours ${esc(c.name)}">▶</button></li>`).join('')
+    $('#libList').innerHTML=L0.length?L0.map(c=>`<li><button type="button" class="card-btn" data-open="${c.id}"><b>${esc(c.name)}</b><span>${nControls(c.points)} balises · ${fmtDist(courseLength(c.points))} · ${new Date(c.created).toLocaleDateString('fr-FR')}${c.imported?' · importé':''}</span></button><button type="button" class="play" ${forOrg?`data-org="${c.id}" aria-label="Organiser une course avec ${esc(c.name)}">📡`:`data-run="${c.id}" aria-label="Faire le parcours ${esc(c.name)}">▶`}</button></li>`).join('')
       :'<li class="hint">Aucun parcours pour l\'instant. Crée-en un ou importe un fichier GPX.</li>';
   },
   openDetail(id){
@@ -652,8 +665,9 @@ const Lib={map:null,lay:null,cur:null,editing:false,
     $('#dtEditHint').hidden=!this.editing;
   }
 };
-$('#libList').addEventListener('click',e=>{const o=e.target.closest('[data-open]');if(o){Lib.openDetail(o.dataset.open);return}const r=e.target.closest('[data-run]');if(r)Setup.open(r.dataset.run)});
+$('#libList').addEventListener('click',e=>{const g=e.target.closest('[data-org]');if(g){const c=courses.find(x=>x.id===g.dataset.org);if(c){Lib.cur=c;OrgSetup.open(c)}return}const o=e.target.closest('[data-open]');if(o){if(Lib.forOrg){const c=courses.find(x=>x.id===o.dataset.open);if(c){Lib.cur=c;OrgSetup.open(c)}return}Lib.openDetail(o.dataset.open);return}const r=e.target.closest('[data-run]');if(r)Setup.open(r.dataset.run)});
 $('#dtRun').onclick=()=>Setup.open(Lib.cur.id);
+$('#dtOrg').onclick=()=>OrgSetup.open(Lib.cur);
 $('#dtShare').onclick=()=>shareFile(slug(Lib.cur.name)+'.gpx',courseToGPX(Lib.cur));
 $('#dtDownload').onclick=()=>saveFile(slug(Lib.cur.name)+'.gpx',courseToGPX(Lib.cur));
 $('#dtPathsBtn').onclick=async()=>{const c=Lib.cur,b=$('#dtPathsBtn');b.disabled=true;b.textContent='⏳ Téléchargement…';
@@ -709,21 +723,29 @@ $('#testVoice').onclick=()=>{Snd.unlock();Voice.unlock();const m=settings.voiceM
 $('#testBeep').onclick=async()=>{Snd.unlock();for(let i=0;i<14;i++){const k=1-i/13;Snd.tone(1500-k*900,0.08,{vol:0.5});await sleep(180+k*1100)}Snd.chime();vib([200,100,200])};
 $('#compassBtn').onclick=async()=>{const ok=await Compass.enable();if(!ok)toast('Boussole refusée ou indisponible sur cet appareil',true);setTimeout(()=>Setup.compassUI(),800)};
 Compass.onChange=()=>{if(current==='setup'||RunOpts.open)Setup.compassUI();if(current==='run')Run.renderDir()};
-$('#startRun').onclick=()=>{
-  Snd.unlock();Voice.unlock();Compass.enable();
+$('#startRun').onclick=async()=>{
+  Snd.unlock();Voice.unlock();if(!await Run.checkActive())return;Compass.enable();
   if(settings.voiceMode==='app'&&!NATIVE&&!('speechSynthesis' in window))toast('Synthèse vocale indisponible ici',true);
   Run.open(Setup.course,$('#partName').value.trim());
 };
 
 /* ---------------- Épreuve ---------------- */
 const Run={map:null,lay:null,
-  open(course,participant){
-    Object.assign(this,{c:course,pts:course.points,idx:0,participant,splits:[],track:[],t0:null,pausedAt:null,pausedTotal:0,lastAnn:0,lastAnnDist:null,inZone:false,insideSince:null,
-      lastFixT:Date.now(),lostSaid:false,ended:false,d:null,b:null,follow:true,lastFit:0,id:uid(),date:new Date().toISOString(),meM:null,accC:null,line:null,
+  open(course,participant,ctx={}){
+    const rs=ctx.resume||null,link=ctx.race||null,rinfo=link&&link.race?{code:link.code,opts:link.race.opts||{}}:rs&&rs.race?rs.race:null;
+    if(this.link&&this.link!==link){try{this.link.close()}catch(e){}}
+    Object.assign(this,{c:course,pts:course.points,idx:rs?rs.idx:0,participant,splits:rs?rs.splits:[],track:rs?rs.track||[]:[],t0:rs?rs.t0:null,pausedAt:null,pausedTotal:rs?rs.pausedTotal||0:0,lastAnn:0,lastAnnDist:null,inZone:false,insideSince:null,
+      link,race:rinfo?{code:rinfo.code,opts:Object.assign({startType:'individual',radius:10},rinfo.opts)}:null,pid:rs&&rs.pid||uid(),finishAt:null,rstatus:null,lastPub:0,lastTrk:0,lastSave:0,waiting:false,
+      lastFixT:Date.now(),lostSaid:false,ended:false,d:null,b:null,follow:true,lastFit:0,id:rs?rs.id:uid(),date:rs?rs.date:new Date().toISOString(),meM:null,accC:null,line:null,
       route:null,lastRouteT:0,pathsDrawn:false,routeLine:null,routeCase:null});
     $('#runRoute').textContent='';
     if(this.lay)this.lay.clearLayers();
-    if(this.pts[0].type!=='start')this.t0=Date.now();
+    if(this.link)this.link.onRace=r=>this.onRace(r);
+    const lr=link&&link.race;
+    if(this.race&&this.race.opts.startType==='mass'&&!this.t0){if(lr&&lr.status==='started')this.t0=lr.startAt||Date.now();else this.waiting=true}
+    if(!rs&&!this.waiting&&!this.t0&&this.pts[0].type!=='start')this.t0=Date.now();
+    if(!rs&&lr&&lr.status==='started'&&this.race.opts.startType==='mass'&&this.pts[0].type==='start'){this.splits.push({id:this.pts[0].id,name:this.pts[0].name,type:'start',elapsed:0,leg:0,mode:'auto',lat:this.pts[0].lat,lon:this.pts[0].lon,time:new Date(this.t0).toISOString()});this.idx=1}
+    $('#runPause').hidden=!!this.race;
     $('#runPause').classList.remove('paused');$('#runPause').innerHTML='⏸ Pause';$('#runMsg').textContent='';
     $('#runValidate').hidden=false;
     show('run');
@@ -734,11 +756,51 @@ const Run={map:null,lay:null,
     clearInterval(this.tickI);this.tickI=setInterval(()=>this.tick(),1000);
     this.beepLoop();
     const nc=nControls(this.pts);
-    const intro=`Parcours ${this.c.name}. ${nc} balise${nc>1?'s':''}. `+(this.t0?'Chrono lancé. ':'Rendez-vous d\'abord au départ. ');
+    const intro=rs?'Épreuve reprise. ':`${this.race?'Course':'Parcours'} ${this.c.name}. ${nc} balise${nc>1?'s':''}. `+(this.waiting?'En attente du départ donné par l\'organisateur. ':this.t0?'Chrono lancé. ':'Rendez-vous d\'abord au départ. ');
     if(GPS.last)this.compute(GPS.last);
-    this.render();
+    this.render();this.save();this.publish(true);
     setTimeout(()=>this.announce(intro+this.guidance()),300);
+    if(lr)this.onRace(lr);
   },
+  /* course organisée : rayon fixé par l'organisateur ; position sur la carte malvoyant selon ses règles */
+  rad(){return this.race&&this.race.opts.radius?this.race.opts.radius:settings.radius},
+  showMe(){return settings.showMe&&(!this.race||this.waiting||this.race.opts.showMe!==false)},
+  onRace(r){
+    if(this.ended||!r)return;
+    if(this.waiting&&r.status==='started'){
+      this.waiting=false;this.t0=r.startAt||Date.now();Snd.fanfare();vib([300,100,300]);toast('🏁 Départ donné par l\'organisateur');
+      const t=this.target();if(t&&t.type==='start')this.validate('auto');else{this.compute(GPS.last);this.render();this.lastAnn=Date.now();this.announce('Départ ! Chrono lancé. '+this.guidance())}
+      this.publish(true);this.save();this.redrawMap();
+    }
+    if((r.status==='closed'||r.status==='deleted')&&!this.ended){toast('L\'organisateur a clos la course.',true);this.finish(false,'closed')}
+  },
+  status(){return this.ended?this.rstatus:this.t0?'running':'waiting'},
+  publish(force){
+    if(!this.link)return;const now=Date.now();if(!force&&now-this.lastPub<5000)return;this.lastPub=now;const f=GPS.last;
+    this.link.publishState({pid:this.pid,name:this.participant||'Coureur',status:this.status(),startAt:this.t0,finishAt:this.finishAt,
+      visited:this.splits.filter(s=>s.id&&s.mode!=='skip').map(s=>({id:s.id,el:s.elapsed,leg:s.leg,m:s.mode==='manual'?'manual':'auto'})),score:0,pen:0,net:0,
+      pos:f?{lat:+f.lat.toFixed(6),lon:+f.lon.toFixed(6),acc:f.sim?3:Math.round(f.acc),t:f.t,sim:f.sim?1:undefined}:null,bat:Battery.level,app:NATIVE?'android':'web',og:settings.profile,upd:now});
+    if(force||now-this.lastTrk>60000){this.lastTrk=now;const e=encTrack(this.track.slice(-3000));if(e)this.link.publishTrack(this.pid,this.participant||'Coureur',e)}
+  },
+  saveSoon(){if(Date.now()-this.lastSave>20000)this.save()},
+  save(){if(this.ended)return;this.lastSave=Date.now();
+    store.set(K.active,{id:this.id,course:this.c,participant:this.participant,date:this.date,idx:this.idx,splits:this.splits,t0:this.t0,
+      pausedTotal:this.pausedTotal+(this.pausedAt?Date.now()-this.pausedAt:0),track:this.track.slice(-1500),pid:this.pid,race:this.race})},
+  async checkActive(){
+    const a=store.get(K.active,null);if(!a||!a.course)return true;
+    const v=await modal({title:'Une épreuve est déjà en cours',body:`<p>${esc(a.course.name)}</p>`,buttons:[{label:'Reprendre cette épreuve',value:'r',primary:true},{label:'L\'abandonner',value:'n',danger:true},{label:'Annuler',value:'c'}]});
+    if(v==='r'){this.resumeActive();return false}
+    if(v==='n'){store.del(K.active);return true}
+    return false;
+  },
+  async resumeActive(){
+    const a=store.get(K.active,null);if(!a||!a.course){store.del(K.active);Home.render();return}
+    Snd.unlock();Voice.unlock();Compass.enable();
+    let link=null;if(a.race){try{link=await RaceLink.connect(a.race.code,{silent:true})}catch(e){}
+      if(link&&!link.race)toast('Relais injoignable pour l\'instant : l\'épreuve reprend, les données partiront dès le retour du réseau.',true)}
+    this.open(a.course,a.participant,{race:link,resume:a});
+  },
+  renderNet(){const e=$('#runNet');if(!e)return;e.hidden=!this.link;if(this.link){e.textContent=this.link.connected?'📡':'📡✖';e.title=this.link.connected?'Connecté au relais':'Hors ligne : envoi au retour du réseau'}},
   target(){return this.pts[this.idx]},
   simExtra(){return[['⇢ +10 m balise',()=>{const t=this.target(),f=GPS.last;if(t&&f)GPS.simMove(bearing(f,t),Math.min(10,dist(f,t)))}]]},
   applyProfile(){
@@ -761,14 +823,15 @@ const Run={map:null,lay:null,
     if(this.ended)return;
     this.compute(f);this.render();this.updateMap();
     if(this.pausedAt)return;
+    if(this.waiting){this.publish();this.saveSoon();return}
     const t=this.target(),d=this.d;
-    if(!this.inZone&&d<=settings.approachDist&&d>settings.radius){
+    if(!this.inZone&&d<=settings.approachDist&&d>this.rad()){
       this.inZone=true;Snd.ok();vib(120);
       this.announce(`Zone d'approche. ${t.name} à ${spokenDist(d)}, ${this.spokenDir(this.b)}.`+(t.desc?` Indice : ${t.desc}.`:''));this.lastAnnDist=d;
     }else if(this.inZone&&d>settings.approachDist+10)this.inZone=false;
-    const accOk=f.acc<=Math.max(30,settings.radius*3);
-    if(d<=settings.radius&&accOk){if(!this.insideSince)this.insideSince=Date.now();if(f.sim||Date.now()-this.insideSince>=1500)this.validate('auto')}else this.insideSince=null;
-    if(!this.ended){this.beepCheck();this.tick()}
+    const accOk=f.acc<=Math.max(30,this.rad()*3);
+    if(d<=this.rad()&&accOk){if(!this.insideSince)this.insideSince=Date.now();if(f.sim||Date.now()-this.insideSince>=1500)this.validate('auto')}else this.insideSince=null;
+    if(!this.ended){this.beepCheck();this.tick();this.publish();this.saveSoon()}
   },
   spokenDir(b){
     if(settings.dirFormat==='clock'){const hd=currentHeading();if(hd){const c=clockOf((b-hd.h+360)%360);return`à ${c} heure${c>1?'s':''}`+(c===12?', droit devant':c===6?', derrière vous':'')}}
@@ -790,8 +853,9 @@ const Run={map:null,lay:null,
   tick(){
     $('#runChrono').textContent=fmtTime(this.elapsed());
     if(this.ended||this.pausedAt)return;
-    const now=Date.now();
-    if(this.insideSince&&now-this.insideSince>=1500){const f=GPS.last,t=this.target();if(f&&t&&dist(f,t)<=settings.radius){this.validate('auto');return}this.insideSince=null}
+    const now=Date.now();this.publish();
+    if(this.waiting){if(now-this.lastAnn>=settings.interval*1000)this.announce('En attente du départ donné par l\'organisateur. '+this.guidance());return}
+    if(this.insideSince&&now-this.insideSince>=1500){const f=GPS.last,t=this.target();if(f&&t&&dist(f,t)<=this.rad()){this.validate('auto');return}this.insideSince=null}
     const age=now-this.lastFixT,err=GPS.lastErrT>this.lastFixT;
     if(((err&&age>10000)||age>60000)&&!this.lostSaid){this.lostSaid=true;Snd.warn();this.announce(err?'Signal GPS perdu. Avancez à découvert ou attendez.':'Position GPS non actualisée depuis une minute.');return}
     const iv=(this.inZone?Math.min(settings.interval,settings.zoneInterval):settings.interval)*1000;
@@ -799,21 +863,23 @@ const Run={map:null,lay:null,
   },
   beepLoop(){clearInterval(this.beepI);this.nextBeep=0;this.beepI=setInterval(()=>this.beepCheck(),100)},
   beepCheck(){
-    if(this.ended||this.pausedAt||!settings.beep||!this.inZone||this.d==null||current!=='run')return;
+    if(this.ended||this.pausedAt||this.waiting||!settings.beep||!this.inZone||this.d==null||current!=='run')return;
     const now=Date.now();if(now<this.nextBeep||Voice.busy())return;
-    const r=settings.radius,A=Math.max(settings.approachDist,r+1),k=Math.max(0,Math.min(1,(this.d-r)/(A-r)));
+    const r=this.rad(),A=Math.max(settings.approachDist,r+1),k=Math.max(0,Math.min(1,(this.d-r)/(A-r)));
     this.nextBeep=now+170+k*1300;let freq=1500-k*900,pan=0;const hd=currentHeading();
     if(hd){const rel=((this.b-hd.h)+360)%360;if(settings.stereo)pan=Math.sin(rel*RAD);if(rel>100&&rel<260)freq*=0.6}
     Snd.tone(freq,0.08,{pan,vol:0.55});
   },
   validate(mode){
     if(this.ended)return;
+    if(this.waiting){this.announce('En attente du départ donné par l\'organisateur.');return}
     const t=this.target(),now=Date.now();
     if(t.type==='start'&&!this.t0)this.t0=now;
     const el=this.elapsed(),prev=this.splits.length?this.splits[this.splits.length-1].elapsed:0,f=GPS.last;
-    this.splits.push({name:t.name,type:t.type,elapsed:el,leg:el-prev,mode,lat:f?+f.lat.toFixed(6):t.lat,lon:f?+f.lon.toFixed(6):t.lon,time:new Date(now).toISOString()});
+    this.splits.push({id:t.id,name:t.name,type:t.type,elapsed:el,leg:el-prev,mode,lat:f?+f.lat.toFixed(6):t.lat,lon:f?+f.lon.toFixed(6):t.lon,time:new Date(now).toISOString()});
     this.idx++;this.inZone=false;this.insideSince=null;this.route=null;this.lastRouteT=0;this.lastAnnDist=null;this.d=null;
     if(this.idx>=this.pts.length){this.finish(true);return}
+    this.publish(true);this.save();
     vib(mode==='skip'?[400]:[200,100,200]);
     if(mode==='skip')Snd.warn();else Snd.chime();
     let msg=t.type==='start'?'Départ validé, chrono lancé. ':mode==='skip'?`${t.name} passée. `:`${t.name} validée ! Temps : ${spokenTime(el)}. `;
@@ -822,20 +888,23 @@ const Run={map:null,lay:null,
     this.lastAnn=Date.now();
     setTimeout(()=>{if(!this.ended)this.announce(msg+this.guidance())},800);
   },
-  finish(done){
-    this.ended=true;Lock.disable(true);RunOpts.hide();clearInterval(this.tickI);clearInterval(this.beepI);
+  finish(done,why){
+    this.ended=true;this.waiting=false;Lock.disable(true);RunOpts.hide();clearInterval(this.tickI);clearInterval(this.beepI);
     if(this.pausedAt){this.pausedTotal+=Date.now()-this.pausedAt;this.pausedAt=null}
     const total=this.elapsed();
+    this.rstatus=done?'finished':(why||'abandoned');this.finishAt=this.t0?this.t0+total+this.pausedTotal:null;
+    store.del(K.active);this.publish(true);
+    const link=this.link;if(link)setTimeout(()=>{try{link.close()}catch(e){}if(this.link===link)this.link=null},4000);
     if(done){Snd.fanfare();vib([300,100,300,100,600]);this.announce(`Arrivée ! Parcours terminé en ${spokenTime(total)}. Bravo !`)}
-    else this.announce('Épreuve arrêtée.');
+    else this.announce(why==='closed'?'Course close par l\'organisateur. Vos temps sont enregistrés.':'Épreuve arrêtée.');
     const r={id:this.id,courseId:this.c.id,courseName:this.c.name,participant:this.participant,date:this.date,total,finished:done,
-      nPoints:this.pts.length,splits:this.splits,track:this.track.slice(-4000),radius:settings.radius};
+      nPoints:this.pts.length,splits:this.splits,track:this.track.slice(-4000),radius:this.rad(),raceCode:this.race?this.race.code:undefined};
     results.push(r);saveResults();
     if(this.unsub)this.unsub();this.unsub=null;GPS.stop();Wake.off();
     setTimeout(()=>Results.show(r),done?2500:400);
   },
   async askQuit(){
-    const v=await modal({title:'Arrêter l\'épreuve ?',body:'<p>Les temps déjà réalisés seront conservés.</p>',buttons:[{label:'Arrêter et voir les résultats',value:true,danger:true},{label:'Continuer l\'épreuve',value:false,primary:true}]});
+    const v=await modal({title:this.race?'Abandonner la course ?':'Arrêter l\'épreuve ?',body:'<p>Les temps déjà réalisés seront conservés.</p>',buttons:[{label:'Arrêter et voir les résultats',value:true,danger:true},{label:'Continuer l\'épreuve',value:false,primary:true}]});
     if(v&&!this.ended)this.finish(false);
   },
   togglePause(){
@@ -843,11 +912,12 @@ const Run={map:null,lay:null,
     if(this.pausedAt){this.pausedTotal+=Date.now()-this.pausedAt;this.pausedAt=null;b.classList.remove('paused');b.innerHTML='⏸ Pause';this.announce('Reprise. '+this.guidance())}
     else{this.pausedAt=Date.now();b.classList.add('paused');b.innerHTML='▶ Reprendre';Voice.stop();this.announce('Pause. Le chrono est arrêté.')}
   },
-  onResumeVisible(){if(!this.ended&&!this.pausedAt)setTimeout(()=>this.announce('Guidage repris. '+this.guidance()),500)},
+  onResumeVisible(){if(!this.ended&&!this.pausedAt&&!this.waiting)setTimeout(()=>this.announce('Guidage repris. '+this.guidance()),500)},
   render(){
     const t=this.target();if(!t)return;
-    const nc=nControls(this.pts);let lbl=t.name;
-    if(t.type==='control')lbl+=` · ${shortLabel(this.pts,this.idx)}/${nc}`;
+    const nc=nControls(this.pts);let lbl=this.waiting?'⏳ Attente du départ':t.name;
+    if(t.type==='control'&&!this.waiting)lbl+=` · ${shortLabel(this.pts,this.idx)}/${nc}`;
+    this.renderNet();
     $('#runTarget').textContent=lbl;
     $('#runDist').textContent=this.d!=null?fmtDist(this.d):'—';
     $('#runProg').textContent=`${this.splits.length}/${this.pts.length} points`;
@@ -878,10 +948,10 @@ const Run={map:null,lay:null,
     if(!this.pathsDrawn){drawPaths(this.pathLay,Paths.get(this.c.id),mapStyleOf(this.map));this.pathsDrawn=true}
     if(settings.showDone)this.pts.slice(0,this.idx).forEach((p,i)=>L.marker([p.lat,p.lon],{icon:ctrlIcon(this.pts,i,{size:30,cls:'done'}),interactive:false}).addTo(this.lay));
     const t=this.target();if(!t)return;
-    if(!settings.showMe&&this.idx>0){const pv=this.pts[this.idx-1];
+    if(!this.showMe()&&this.idx>0){const pv=this.pts[this.idx-1];
       L.polyline([[pv.lat,pv.lon],[t.lat,t.lon]],{color:'#FF2BD6',weight:5,opacity:.9,interactive:false}).addTo(this.lay);
       L.marker([pv.lat,pv.lon],{icon:ctrlIcon(this.pts,this.idx-1,{size:34}),interactive:false}).addTo(this.lay)}
-    L.circle([t.lat,t.lon],{radius:settings.radius,color:'#000',weight:3,fillColor:'#FFD400',fillOpacity:.25,interactive:false}).addTo(this.lay);
+    L.circle([t.lat,t.lon],{radius:this.rad(),color:'#000',weight:3,fillColor:'#FFD400',fillOpacity:.25,interactive:false}).addTo(this.lay);
     this.line=L.polyline([],{color:'#FF2BD6',weight:7,dashArray:'1 14',lineCap:'round',interactive:false}).addTo(this.lay);
     const rs=PATH_STYLE[mapStyleOf(this.map)]||PATH_STYLE.map;
     this.routeCase=L.polyline([],{color:rs.routeCase,weight:19,opacity:.95,lineCap:'round',lineJoin:'round',interactive:false}).addTo(this.lay);
@@ -892,7 +962,7 @@ const Run={map:null,lay:null,
   updateMap(){
     if(!this.map||settings.profile!=='low')return;
     const f=GPS.last,t=this.target();if(!f||!t)return;
-    if(!settings.showMe){ /* comme en vraie course d'orientation : ni position, ni trait, ni itinéraire, carte fixe */
+    if(!this.showMe()){ /* comme en vraie course d'orientation : ni position, ni trait, ni itinéraire, carte fixe */
       if(this.meM){this.lay.removeLayer(this.meM);this.lay.removeLayer(this.accC);this.meM=null;this.accC=null}
       if(this.line)this.line.setLatLngs([]);if(this.routeLine){this.routeCase.setLatLngs([]);this.routeLine.setLatLngs([])}
       this.route=null;$('#runRoute').textContent='';return;
@@ -911,7 +981,7 @@ const Run={map:null,lay:null,
   fit(force){
     if(!this.map||settings.profile!=='low')return;
     const f=GPS.last,t=this.target();if(!t)return;this.lastFit=Date.now();
-    if(!settings.showMe){const pv=this.idx>0?this.pts[this.idx-1]:null;
+    if(!this.showMe()){const pv=this.idx>0?this.pts[this.idx-1]:null;
       if(pv&&dist(pv,t)>5)this.map.fitBounds(L.latLngBounds([[pv.lat,pv.lon],[t.lat,t.lon]]),{padding:[70,70],maxZoom:18,animate:!force});
       else this.map.setView([t.lat,t.lon],17,{animate:!force});return}
     if(!f){this.map.setView([t.lat,t.lon],17);return}
@@ -971,8 +1041,17 @@ if(!Compass.needsPerm)Compass.enable();
 if(NATIVE){$('#dtDownload').textContent='💾 Enregistrer le GPX';$('#rsDownload').textContent='💾 Enregistrer (GPX)';$('#rsCopy').textContent='📤 Envoyer le résumé'}
 try{history.replaceState({s:'home'},'')}catch(e){}
 if(!NATIVE&&'serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
-(async()=>{const dr=store.get(K.draft,null);if(dr&&dr.points&&dr.points.length){
+const joinHash=()=>{const m=/^#join-([0-9A-Za-z-]+)/.exec(location.hash);if(!m)return null;try{history.replaceState({s:'home'},'',location.pathname+location.search)}catch(e){}return m[1]};
+window.addEventListener('hashchange',()=>{const c=joinHash();if(c)Join.open(c)});
+(async()=>{
+  const jc=joinHash();if(jc){Join.open(jc);return}
+  if(store.get(K.follow,null)){Follow.resume();return}
+  const act=store.get(K.active,null);
+  if(act&&act.course){Voice.say('Une épreuve n\'est pas terminée. Touchez Reprendre l\'épreuve pour continuer.');
+    const v=await modal({title:'Épreuve en cours',body:`<p><b>${esc(act.course.name)}</b></p><p class="hint">Cette épreuve n'est pas terminée.</p>`,buttons:[{label:'⏯ Reprendre l\'épreuve',value:true,primary:true},{label:'Plus tard',value:false}]});
+    if(v)Run.resumeActive();return}
+  const dr=store.get(K.draft,null);if(dr&&dr.points&&dr.points.length){
   const v=await modal({title:'Parcours en cours de création',body:`<p>Un brouillon avec ${dr.points.length} point(s) a été retrouvé.</p>`,buttons:[{label:'Reprendre la création',value:true,primary:true},{label:'Plus tard',value:false}]});
   if(v){Create.draft=dr;Create.open()}}})();
-window.OGuide={RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
+window.OGuide={Org,OrgSetup,TrainSetup,Follow,Join,Replay,RaceLink,store,K,trackDist,RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
 })();

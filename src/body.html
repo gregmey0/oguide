@@ -8,8 +8,12 @@
       <div><h1 tabindex="-1">O'Guide</h1><p>Course d'orientation accessible</p></div>
     </div>
     <div id="homeWarn"></div>
+    <div id="homeExtra"></div>
     <button class="primary big" id="hCreate">➕ Créer un parcours</button>
     <button class="big" id="hLib">📚 Mes parcours&nbsp;<span id="hCount"></span></button>
+    <button class="big" id="hJoin">🏃 Rejoindre une course (code ou QR)</button>
+    <button class="big" id="hOrg">📡 Organiser une course</button>
+    <button class="big" id="hTrain">📍 Suivi en pratique libre</button>
     <button class="big" id="hImport">📂 Importer un GPX</button>
     <div class="row"><button id="hSettings">⚙ Réglages</button><button id="hHelp">❔ Aide</button></div>
     <button id="hInstall" hidden>📲 Installer l'appli sur ce téléphone</button>
@@ -35,7 +39,7 @@
 
 <!-- BIBLIOTHEQUE -->
 <section id="library" class="screen">
-  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1">Mes parcours</h1></header>
+  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1" id="libTitle">Mes parcours</h1></header>
   <main>
     <button id="libImport">📂 Importer un GPX</button>
     <ul id="libList" class="cards"></ul>
@@ -48,6 +52,7 @@
   <div id="detailMap" class="map"></div>
   <main>
     <button class="primary big" id="dtRun">▶ Faire ce parcours</button>
+    <button class="big ok" id="dtOrg">📡 Organiser une course avec ce parcours</button>
     <div class="row"><button id="dtShare">📤 Partager le GPX</button><button id="dtDownload">⬇ Télécharger le GPX</button></div>
     <div class="row"><button id="dtEdit">✋ Corriger les positions</button><button id="dtRename">✏ Renommer</button></div>
     <p class="hint" id="dtEditHint" hidden>Fais glisser une balise sur la carte pour corriger sa position. Appuie à nouveau sur le bouton pour terminer.</p>
@@ -144,7 +149,7 @@
       <div id="runArrowWrap"><svg id="runArrow" viewBox="0 0 100 100"><polygon points="50,4 84,88 50,68 16,88" fill="#FFD400" stroke="#fff" stroke-width="4" stroke-linejoin="round"/></svg><span id="runArrowNote"></span></div>
       <div class="run-txt"><div id="runDist">—</div><div id="runDir">—</div><div id="runRoute"></div></div>
     </div>
-    <div class="run-line3"><span id="runGps" class="gps none" aria-hidden="true">GPS…</span><span id="runProg" aria-hidden="true"></span><button type="button" id="runOpts">⚙ Options</button></div>
+    <div class="run-line3"><span id="runGps" class="gps none" aria-hidden="true">GPS…</span><span id="runProg" aria-hidden="true"></span><span id="runNet" class="net" hidden aria-hidden="true">📡</span><button type="button" id="runOpts">⚙ Options</button></div>
   </div>
   <div id="runMapWrap"><div id="runMap"></div><button id="runRecenter">⌖ Recentrer</button></div>
   <button id="runTap">🔊 Toucher pour répéter<small id="runMsg"></small></button>
@@ -182,6 +187,79 @@
   </main>
 </section>
 
+<!-- REJOINDRE -->
+<section id="join" class="screen">
+  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1">Rejoindre une course ou une séance</h1></header>
+  <main>
+    <label>Code (donné par l'organisateur ou l'encadrant)
+      <input type="text" id="jCode" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="HK7-Q4M-ZP2D" maxlength="16"></label>
+    <div class="row"><button type="button" class="primary" id="jLookup">🔎 Chercher</button><button type="button" id="jScan" hidden>📷 Scanner le QR</button></div>
+    <video id="jVideo" playsinline muted hidden></video>
+    <div id="jInfo"></div>
+    <div id="jConfirm" class="card" hidden>
+      <label>Ton nom (visible par l'organisateur)<input type="text" id="jName" autocomplete="given-name" placeholder="Prénom Nom"></label>
+      <button type="button" class="primary big" id="jGo">✔ Rejoindre la course</button>
+    </div>
+  </main>
+</section>
+
+<!-- ORGANISER : PREPARATION -->
+<section id="orgsetup" class="screen">
+  <header class="bar"><button class="back" data-go="detail" aria-label="Retour">←</button><h1 tabindex="-1">Organiser une course</h1></header>
+  <main>
+    <div id="osCourse" class="card"></div>
+    <section class="card">
+      <h2>Course</h2>
+      <label>Nom affiché aux coureurs<input type="text" id="osName"></label>
+      <label>Départ<select id="osStart"><option value="mass">Groupé : je donne le départ à tous</option><option value="individual">Individuel : chacun part de son côté</option></select></label>
+      <p class="hint" id="osStartHelp"></p>
+      <label>Rayon de validation des balises<select id="osRadius"><option value="5">5 m</option><option value="8">8 m</option><option value="10">10 m</option><option value="15">15 m</option><option value="20">20 m</option></select></label>
+      <label class="chk"><input type="checkbox" id="osShowMe" checked> Les coureurs peuvent voir leur position sur la carte (profil malvoyant, et coureurs Shadow CO). Décocher pour une vraie course d'orientation.</label>
+      <p class="hint">Le guidage vocal, les bips d'approche et la carte contrastée restent ceux réglés sur chaque téléphone. Les balises se prennent dans l'ordre.</p>
+    </section>
+    <p class="hint">Les positions passent par un relais internet public, chiffrées avec le code de la course : seuls ceux qui ont le code peuvent les lire. Des coureurs voyants peuvent rejoindre la même course avec l'application Shadow CO.</p>
+    <button type="button" class="primary big" id="osCreate">📡 Créer la course</button>
+  </main>
+</section>
+
+<!-- ORGANISER : SUIVI -->
+<section id="org" class="screen">
+  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1" id="orgTitle">Course</h1><span id="orgNet" class="net">📡</span></header>
+  <div class="orgbar" id="orgbarLive">
+    <span id="orgStatus" class="tag"></span>
+    <button type="button" id="orgQR">🔗 Code / QR</button>
+    <button type="button" class="primary" id="orgLaunch" hidden>▶ Lancer le départ</button>
+    <button type="button" id="orgRank">📊 Classement</button>
+    <button type="button" id="orgReplayBtn">⏯ Replay</button>
+    <button type="button" class="danger" id="orgClose">🏁 Clore</button>
+    <button type="button" id="orgMore" aria-label="Plus d'options">⋯</button>
+  </div>
+  <div class="orgmapwrap"><div id="orgMap" class="map"></div><div class="mapbtns"><button type="button" id="orgFit" aria-label="Voir tout le monde">🗺</button></div></div>
+  <div id="orgReplay" class="replay" hidden>
+    <div class="rp-ctl"><button type="button" class="primary" id="rpPlay" aria-label="Lecture / pause">▶</button><input type="range" id="rpSlider" min="0" max="1000" value="0" aria-label="Moment de la course"><select id="rpSpeed" aria-label="Vitesse"><option value="10">×10</option><option value="30" selected>×30</option><option value="60">×60</option><option value="120">×120</option></select></div>
+    <p id="rpTime" class="center"></p>
+    <ul id="rpLegend" class="rplegend"></ul>
+    <button type="button" id="rpExit">✖ Revenir au direct</button>
+  </div>
+  <main id="orgLive">
+    <p id="orgCount"></p>
+    <ul id="orgList" class="runners"></ul>
+  </main>
+</section>
+
+<!-- SUIVI EN PRATIQUE LIBRE : PRATIQUANT -->
+<section id="follow" class="screen">
+  <main class="follow">
+    <div class="fw-icon" id="fwIcon" aria-hidden="true">📍</div>
+    <h1 tabindex="-1" id="fwTitle">Suivi en cours</h1>
+    <p class="fw-name" id="fwName"></p>
+    <p id="fwState" class="fw-state"></p>
+    <p class="hint" id="fwHint">Rien à faire : range le téléphone dans la poche ou le sac.<span class="web-only"> Sur navigateur, garde l'écran allumé (le verrouiller coupe le suivi).</span></p>
+    <button type="button" class="hold danger big" id="fwStop">⏹ Arrêter le suivi<small>appui long</small></button>
+    <button type="button" class="big" id="fwHome" data-go="home" hidden>Retour à l'accueil</button>
+  </main>
+</section>
+
 <!-- AIDE -->
 <section id="help" class="screen">
   <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1">Aide</h1></header>
@@ -207,6 +285,18 @@
       <li>À l'arrivée sur la balise, validation automatique avec un carillon, puis annonce de la suivante. Si le GPS dérive, l'accompagnateur peut <b>Valider</b> (appui long).</li>
       <li>Le chrono démarre à la validation du départ. Les temps intermédiaires et la trace sont exportables à la fin.</li>
     </ul>
+    <h2>4. Courses organisées</h2>
+    <ul>
+      <li><b>Organisateur</b> : « Organiser une course » (ou le bouton 📡 de la fiche d'un parcours) crée une course avec un code et un QR code. Départ groupé ou individuel, rayon de validation, affichage de la position pour les malvoyants.</li>
+      <li>Le tableau de bord montre tous les coureurs sur la carte (👂 non-voyant, 👁 malvoyant), leurs balises, leurs temps, la batterie et des alertes (immobile depuis 4 min, sans nouvelles). Classement, résultats CSV, traces GPX et ⏯ Replay.</li>
+      <li><b>Coureur</b> : « Rejoindre une course », tape le code (ou scanne le QR), indique ton nom. Le guidage est le même qu'en épreuve seule ; en départ groupé, le chrono démarre à l'annonce « Départ ! ».</li>
+      <li>Même relais que l'application Shadow CO : des coureurs voyants (Shadow CO) et non-voyants ou malvoyants (O'Guide) peuvent faire la même course.</li>
+    </ul>
+    <h2>5. Suivi en pratique libre</h2>
+    <ul>
+      <li><b>Encadrant</b> : « Suivi en pratique libre » crée une séance sans parcours. Les pratiquants la rejoignent avec le code et rangent leur téléphone ; tu les suis sur la carte en direct (distance, vitesse, alertes), puis en replay. 📊 Bilan : tableau CSV et traces GPX.</li>
+      <li><b>Pratiquant</b> : rien à faire. Une voix confirme « Suivi lancé ». Pour arrêter : appui long sur « Arrêter le suivi ».</li>
+    </ul>
     <h2>Conseils terrain</h2>
     <ul>
       <li class="web-only">Garde l'écran allumé et l'appli au premier plan : un navigateur coupe le GPS quand l'écran est verrouillé. L'appli demande au téléphone de rester allumé.</li>
@@ -223,6 +313,10 @@
   </main>
 </section>
 
+<div id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <header class="bar"><h1 id="sheetTitle" tabindex="-1"></h1><button type="button" class="primary sheetClose">✔ Fermer</button></header>
+  <main id="sheetBody"></main>
+</div>
 <div id="toast" role="status"></div>
 <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="box">
