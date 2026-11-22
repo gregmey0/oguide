@@ -1075,6 +1075,8 @@ button.paused{background:var(--warn);color:#000;border-color:var(--warn)}
     <label>Code (donné par l'organisateur ou l'encadrant)
       <input type="text" id="jCode" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="HK7-Q4M-ZP2D" maxlength="16"></label>
     <div class="row"><button type="button" class="primary" id="jLookup">🔎 Chercher</button><button type="button" id="jScan" hidden>📷 Scanner le QR</button></div>
+    <button type="button" class="ok big" id="jApp" hidden>📱 Ouvrir dans l'application</button>
+    <p class="hint" id="jAppNo" hidden>L'application n'est pas installée sur ce téléphone : tu peux continuer ici, dans le navigateur (écran allumé), ou <a href="https://github.com/gregmey0/oguide/releases/latest/download/OGuide.apk">installer l'application</a>.</p>
     <video id="jVideo" playsinline muted hidden></video>
     <div id="jInfo"></div>
     <div id="jConfirm" class="card" hidden>
@@ -3520,10 +3522,11 @@ var qrcode = function() {
 </script>
 <script>'use strict';
 (function(){
-const VERSION='1.5.0';
+const VERSION='1.5.1';
 const CAP=window.capacitorExports||null;
 const NATIVE=!!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform());
-const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications')}:{};
+const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications'),app:CAP.registerPlugin('App')}:{};
+const ANDROID=/Android/i.test(navigator.userAgent);
 const IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const STANDALONE=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
 document.documentElement.classList.add(NATIVE?'native':'web');if(IOS)document.documentElement.classList.add('ios');
@@ -4568,7 +4571,6 @@ const Battery={level:null,
 };
 Battery.init();
 const ptsOf=p=>p&&p.pts!=null?p.pts:10;
-const profIcon=st=>st.og==='blind'?' 👂':st.og==='low'?' 👁':'';
 /* parcours sur la carte de l'organisateur */
 function drawCourse(layer,c){
   layer.clearLayers();const pts=c.points;if(!pts.length)return null;
@@ -4606,6 +4608,10 @@ const BROKERS={H:'wss://broker.hivemq.com:8884/mqtt',E:'wss://broker.emqx.io:808
 (()=>{const t=store.get('shco.testbroker',null);if(t)BROKERS.T=t})();
 const CODE_ABC='23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 const WEB_URL='https://gregmey0.github.io/oguide/';
+/* ouverture de l'application Android depuis la page web (QR code scanné avec l'appareil photo) */
+const APP={name:'O\'Guide',scheme:'oguide',pkg:'org.oguide.app',apk:'https://github.com/gregmey0/oguide/releases/latest/download/OGuide.apk'};
+function appIntent(code){const fb=location.origin+location.pathname+'?noapp=1#join-'+code;
+  return`intent://join-${code}#Intent;scheme=${APP.scheme};package=${APP.pkg};S.browser_fallback_url=${encodeURIComponent(fb)};end`}
 function newCode(b){const r=crypto.getRandomValues(new Uint8Array(9));return b+[...r].map(x=>CODE_ABC[x%CODE_ABC.length]).join('')}
 function normCode(s){const m=/join-([0-9A-Z-]+)/i.exec(String(s||''));return(m?m[1]:String(s||'')).toUpperCase().replace(/[^0-9A-Z]/g,'')}
 function validCode(c){return c.length===10&&!!BROKERS[c[0]]&&[...c.slice(1)].every(ch=>CODE_ABC.includes(ch))}
@@ -4699,15 +4705,21 @@ const RaceLink={
 /* ---------------- Rejoindre une course ---------------- */
 const Join={link:null,stream:null,
   open(code){
-    show('join');$('#jCode').value=code?fmtCode(normCode(code)):'';$('#jName').value=store.get(K.me,'');
+    show('join');this.appBtn(code);$('#jCode').value=code?fmtCode(normCode(code)):'';$('#jName').value=store.get(K.me,'');
     $('#jInfo').innerHTML='';$('#jConfirm').hidden=true;$('#jScan').hidden=!('BarcodeDetector' in window&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
     if(code)this.lookup();
+  },
+  /* page web sur Android : proposer d'ouvrir l'application (suivi téléphone verrouillé) */
+  appBtn(code){
+    const c=normCode(code||''),noapp=/[?&]noapp=1/.test(location.search),ok=!NATIVE&&ANDROID&&validCode(c);
+    $('#jApp').hidden=!ok||noapp;$('#jAppNo').hidden=!ok||!noapp;
+    if(ok)$('#jApp').onclick=()=>{location.href=appIntent(c)};
   },
   leave(){this.stopScan();if(this.link){this.link.close();this.link=null}},
   async lookup(){
     const code=normCode($('#jCode').value);
     if(!validCode(code)){toast('Code invalide : 10 caractères, par exemple HK7-Q4M-ZP2D',true);return}
-    $('#jCode').value=fmtCode(code);$('#jConfirm').hidden=true;$('#jInfo').innerHTML='<p class="card">⏳ Recherche de la course…</p>';
+    $('#jCode').value=fmtCode(code);$('#jConfirm').hidden=true;this.appBtn(code);$('#jInfo').innerHTML='<p class="card">⏳ Recherche de la course…</p>';
     if(this.link){this.link.close();this.link=null}
     let link=null;try{link=await RaceLink.connect(code)}catch(e){}
     if(current!=='join'){if(link)link.close();return}
@@ -4848,6 +4860,8 @@ $('#hTrain').onclick=()=>TrainSetup.open();
 
 
 /* ---------------- Organiser : suivi en direct ---------------- */
+/* coureurs O'Guide : 👂 non-voyant, 👁 malvoyant */
+const profIcon=st=>st.og==='blind'?' 👂':st.og==='low'?' 👁':'';
 const PALETTE=['#E6194B','#3CB44B','#4363D8','#F58231','#911EB4','#42D4F4','#F032E6','#9A6324','#000075','#808000','#469990','#DC143C','#2E8B57','#8B008B','#FF4500','#1E90FF'];
 const Org={map:null,lay:null,runLay:null,o:null,m:null,key:null,base:null,runners:{},trails:{},tracks:{},tickI:null,focus:null,lastSave:0,
   statusLabel(s,kind){return(kind==='train'?{open:'en cours',closed:'terminée',deleted:'archivée'}:{open:'inscriptions ouvertes',started:'en cours',closed:'close',deleted:'archivée'})[s]||s},
@@ -4987,7 +5001,7 @@ const Org={map:null,lay:null,runLay:null,o:null,m:null,key:null,base:null,runner
     const rows=(st.visited||[]).map(v=>{const p=c.points.find(q=>q.id===v.id);if(!p)return'';const lbl=p.type==='start'?'▲ Départ':p.type==='finish'?'🏁 Arrivée':'Balise '+shortLabel(c.points,c.points.indexOf(p));
       return`<tr><td>${lbl}${v.m==='manual'?' <span class="tag manual">manuel</span>':''}</td><td class="num">${p.type==='start'?'–':fmtTime(v.leg)}</td><td class="num">${fmtTime(v.el)}</td>${sc?`<td class="num">${p.type==='control'?ptsOf(p):''}</td>`:''}</tr>`}).join('');
     const box=document.createElement('div');
-    box.innerHTML=`<p><b>${esc(st.name)}</b> · ${this.stLabel(st,i)}</p><p class="hint">${i.done}/${i.n} balises${sc?` · ${st.score||0} pts − ${st.pen||0} = <b>${st.net||0}</b>`:''}${i.el!=null?' · '+fmtTime(i.el):''}${st.pos?` · position il y a ${fmtTime(Date.now()-st.pos.t)}`:''}</p>
+    box.innerHTML=`<p><b>${esc(st.name)}</b>${profIcon(st)} · ${this.stLabel(st,i)}</p><p class="hint">${i.done}/${i.n} balises${sc?` · ${st.score||0} pts − ${st.pen||0} = <b>${st.net||0}</b>`:''}${i.el!=null?' · '+fmtTime(i.el):''}${st.pos?` · position il y a ${fmtTime(Date.now()-st.pos.t)}`:''}</p>
       <table class="res"><thead><tr><th>Balise</th><th class="num">Inter.</th><th class="num">Cumul</th>${sc?'<th class="num">Pts</th>':''}</tr></thead><tbody>${rows||'<tr><td colspan="4">Aucune balise validée</td></tr>'}</tbody></table>`;
     Sheet.show('Coureur',box);
   },
@@ -5030,7 +5044,7 @@ const Org={map:null,lay:null,runLay:null,o:null,m:null,key:null,base:null,runner
       box.querySelector('tbody').addEventListener('click',e=>{const tr=e.target.closest('[data-pid]');if(tr){Sheet.hide();this.select(tr.dataset.pid)}});
       $('#rkCsv').onclick=()=>this.exportCSV();$('#rkGpx').onclick=()=>this.exportGPX();return}
     const sc=this.o.course.mode==='score',rk=this.ranking(),box=document.createElement('div');
-    box.innerHTML=`<table class="res"><thead><tr><th>#</th><th>Nom</th><th class="num">${sc?'Points':'Balises'}</th><th class="num">Temps</th></tr></thead><tbody>${rk.map(({st,i},k)=>`<tr data-pid="${st.pid}"><td>${st.status==='finished'?k+1:'–'}</td><td>${esc(st.name)}<br><small class="muted">${this.stLabel(st,i)}</small></td><td class="num">${sc?(st.net||0):i.done+'/'+i.n}</td><td class="num">${i.el!=null?fmtTime(i.el):'—'}</td></tr>`).join('')||'<tr><td colspan="4">Aucun coureur</td></tr>'}</tbody></table>
+    box.innerHTML=`<table class="res"><thead><tr><th>#</th><th>Nom</th><th class="num">${sc?'Points':'Balises'}</th><th class="num">Temps</th></tr></thead><tbody>${rk.map(({st,i},k)=>`<tr data-pid="${st.pid}"><td>${st.status==='finished'?k+1:'–'}</td><td>${esc(st.name)}${profIcon(st)}<br><small class="muted">${this.stLabel(st,i)}</small></td><td class="num">${sc?(st.net||0):i.done+'/'+i.n}</td><td class="num">${i.el!=null?fmtTime(i.el):'—'}</td></tr>`).join('')||'<tr><td colspan="4">Aucun coureur</td></tr>'}</tbody></table>
       <div class="row" style="margin-top:1rem"><button type="button" id="rkCsv">⬇ Résultats CSV (tableur)</button></div>`;
     Sheet.show('Classement',box);
     box.querySelector('tbody').addEventListener('click',e=>{const tr=e.target.closest('[data-pid]');if(tr){Sheet.hide();this.select(tr.dataset.pid)}});
@@ -5131,8 +5145,17 @@ try{history.replaceState({s:'home'},'')}catch(e){}
 if(!NATIVE&&'serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
 const joinHash=()=>{const m=/^#join-([0-9A-Za-z-]+)/.exec(location.hash);if(!m)return null;try{history.replaceState({s:'home'},'',location.pathname+location.search)}catch(e){}return m[1]};
 window.addEventListener('hashchange',()=>{const c=joinHash();if(c)Join.open(c)});
+/* application Android ouverte par un lien oguide://join-CODE (bouton de la page web) */
+const linkCode=u=>{const c=normCode(u||'');return validCode(c)?c:null};
+function openFromLink(c){
+  if(current==='run'&&!Run.ended){toast('Termine d\'abord ton épreuve en cours.',true);Voice.say('Une épreuve est en cours.');return}
+  if(current==='follow'&&Follow.on){toast('Un suivi est déjà en cours.',true);return}
+  Join.open(c);
+}
+if(NATIVE&&P.app){try{P.app.addListener('appUrlOpen',e=>{const c=linkCode(e&&e.url);if(c)openFromLink(c)})}catch(e){}}
 (async()=>{
   const jc=joinHash();if(jc){Join.open(jc);return}
+  if(NATIVE&&P.app){try{const r=await P.app.getLaunchUrl();const lc=r&&linkCode(r.url);if(lc){openFromLink(lc);return}}catch(e){}}
   if(store.get(K.follow,null)){Follow.resume();return}
   const act=store.get(K.active,null);
   if(act&&act.course){Voice.say('Une épreuve n\'est pas terminée. Touchez Reprendre l\'épreuve pour continuer.');
@@ -5141,7 +5164,7 @@ window.addEventListener('hashchange',()=>{const c=joinHash();if(c)Join.open(c)})
   const dr=store.get(K.draft,null);if(dr&&dr.points&&dr.points.length){
   const v=await modal({title:'Parcours en cours de création',body:`<p>Un brouillon avec ${dr.points.length} point(s) a été retrouvé.</p>`,buttons:[{label:'Reprendre la création',value:true,primary:true},{label:'Plus tard',value:false}]});
   if(v){Create.draft=dr;Create.open()}}})();
-window.OGuide={Org,OrgSetup,TrainSetup,Follow,Join,Replay,RaceLink,store,K,trackDist,RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
+window.OGuide={Org,OrgSetup,TrainSetup,Follow,Join,Replay,RaceLink,store,K,trackDist,appIntent,RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
 })();
 </script>
 </body>

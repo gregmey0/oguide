@@ -1,9 +1,10 @@
 'use strict';
 (function(){
-const VERSION='1.5.0';
+const VERSION='1.5.1';
 const CAP=window.capacitorExports||null;
 const NATIVE=!!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform());
-const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications')}:{};
+const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications'),app:CAP.registerPlugin('App')}:{};
+const ANDROID=/Android/i.test(navigator.userAgent);
 const IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const STANDALONE=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
 document.documentElement.classList.add(NATIVE?'native':'web');if(IOS)document.documentElement.classList.add('ios');
@@ -1043,8 +1044,17 @@ try{history.replaceState({s:'home'},'')}catch(e){}
 if(!NATIVE&&'serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
 const joinHash=()=>{const m=/^#join-([0-9A-Za-z-]+)/.exec(location.hash);if(!m)return null;try{history.replaceState({s:'home'},'',location.pathname+location.search)}catch(e){}return m[1]};
 window.addEventListener('hashchange',()=>{const c=joinHash();if(c)Join.open(c)});
+/* application Android ouverte par un lien oguide://join-CODE (bouton de la page web) */
+const linkCode=u=>{const c=normCode(u||'');return validCode(c)?c:null};
+function openFromLink(c){
+  if(current==='run'&&!Run.ended){toast('Termine d\'abord ton épreuve en cours.',true);Voice.say('Une épreuve est en cours.');return}
+  if(current==='follow'&&Follow.on){toast('Un suivi est déjà en cours.',true);return}
+  Join.open(c);
+}
+if(NATIVE&&P.app){try{P.app.addListener('appUrlOpen',e=>{const c=linkCode(e&&e.url);if(c)openFromLink(c)})}catch(e){}}
 (async()=>{
   const jc=joinHash();if(jc){Join.open(jc);return}
+  if(NATIVE&&P.app){try{const r=await P.app.getLaunchUrl();const lc=r&&linkCode(r.url);if(lc){openFromLink(lc);return}}catch(e){}}
   if(store.get(K.follow,null)){Follow.resume();return}
   const act=store.get(K.active,null);
   if(act&&act.course){Voice.say('Une épreuve n\'est pas terminée. Touchez Reprendre l\'épreuve pour continuer.');
@@ -1053,5 +1063,5 @@ window.addEventListener('hashchange',()=>{const c=joinHash();if(c)Join.open(c)})
   const dr=store.get(K.draft,null);if(dr&&dr.points&&dr.points.length){
   const v=await modal({title:'Parcours en cours de création',body:`<p>Un brouillon avec ${dr.points.length} point(s) a été retrouvé.</p>`,buttons:[{label:'Reprendre la création',value:true,primary:true},{label:'Plus tard',value:false}]});
   if(v){Create.draft=dr;Create.open()}}})();
-window.OGuide={Org,OrgSetup,TrainSetup,Follow,Join,Replay,RaceLink,store,K,trackDist,RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
+window.OGuide={Org,OrgSetup,TrainSetup,Follow,Join,Replay,RaceLink,store,K,trackDist,appIntent,RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
 })();
