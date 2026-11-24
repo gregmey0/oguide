@@ -2,6 +2,7 @@
 
 Application de course d'orientation pour personnes **non-voyantes et malvoyantes** :
 
+- **Deux interfaces** au choix à l'ouverture : **grands boutons** (déficience visuelle, tout est lu à voix haute) ou **compacte** (accompagnant, enseignant, organisateur). Le choix peut être retenu ou changé dans les Réglages ou avec le bouton ↔ de l'accueil. Les activités en cours restent en haut de l'accueil, le reste est dans **🗂 Historique**.
 - **Création de parcours** sur le terrain : départ, balises, arrivée enregistrés au GPS (position moyennée), indice facultatif lu à l'approche.
 - **Guidage** : distance et azimut (ou direction horaire) annoncés à intervalle régulier, bips d'approche qui accélèrent, validation automatique de la balise, carte très contrastée pour les malvoyants.
 - **Mode poche** : écran tactile verrouillé, le guidage continue.

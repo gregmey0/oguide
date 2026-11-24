@@ -921,30 +921,117 @@ ul.chat .sys{text-align:center;color:var(--warn);font-size:.85rem}
 .layerpick{display:flex;flex-direction:column;gap:.5rem}
 .follow .pmsgBtn{min-height:52px}
 #modal{z-index:4000}#toast{z-index:4100}
+
+/* accueil (1.8) : logo, « en cours » en haut, historique en bas ; deux interfaces */
+.home{justify-content:flex-start;gap:.75rem;padding-top:1.1rem}
+.brand{gap:1.1rem;margin-bottom:.4rem}
+.brand .logo{width:88px;height:88px;border-radius:22px;overflow:hidden;flex:none;box-shadow:0 6px 22px rgba(0,0,0,.65),0 0 0 2px #2a2a2a}
+.brand .logo svg{display:block;width:100%;height:100%}
+.brand h1{font-size:2.2rem;letter-spacing:.01em}
+.brand p{color:var(--muted);font-size:1rem}
+body.ui-acc .hjoin{flex-direction:column;gap:.15rem;min-height:78px;font-size:1.25rem;border-radius:18px}
+body.ui-acc .hjoin small{font-size:.82rem;opacity:.8}
+body.ui-acc .tiles{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+body.ui-acc .tile{flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:left;gap:.2rem;min-height:92px;padding:.7rem .8rem;border-radius:18px;border:2px solid #2b2b2b;background:linear-gradient(180deg,#171717,#0d0d0d);font-size:1rem}
+body.ui-acc .tile .ti{font-size:1.55rem;line-height:1.1;margin-bottom:.15rem}
+body.ui-acc .tile b{font-size:1.02rem;line-height:1.2}
+body.ui-acc .tile small{color:var(--muted);font-size:.8rem;opacity:1}
+.tile:active,.hitem:active{transform:scale(.98)}
+body.ui-acc .tile:hover{border-color:#444}
+body.ui-acc .homefoot{display:grid;grid-template-columns:5fr 3fr 5fr;gap:.5rem;margin-top:.35rem}
+body.ui-acc .homefoot button{min-height:60px;font-size:1.02rem;border-width:2px;border-color:#3a3a3a;border-radius:16px;flex-direction:column;gap:0}
+body.ui-acc .homefoot small{color:var(--muted);opacity:1}
+.now{background:#141100;border:2px solid var(--acc);border-radius:18px;padding:.6rem .6rem .7rem;display:flex;flex-direction:column;gap:.45rem}
+.now h2{display:flex;align-items:center;gap:.5rem;margin:.1rem .2rem .1rem;font-size:1rem}
+.livedot{width:11px;height:11px;border-radius:50%;background:#ff3b30;box-shadow:0 0 0 0 rgba(255,59,48,.6);animation:live 1.6s infinite}
+@keyframes live{70%{box-shadow:0 0 0 8px rgba(255,59,48,0)}100%{box-shadow:0 0 0 0 rgba(255,59,48,0)}}
+@media (prefers-reduced-motion:reduce){.livedot{animation:none}}
+#homeExtra{display:flex;flex-direction:column;gap:.6rem}
+#homeExtra:empty{display:none}
+.hitem{width:100%;justify-content:flex-start;text-align:left;gap:.7rem;min-height:64px;padding:.5rem .7rem;border-width:2px;border-color:#2e2e2e;border-radius:14px;font-weight:400;background:#0e0e0e}
+.hitem .hi{font-size:1.4rem;flex:none}
+.hitem .ht{flex:1;min-width:0;display:flex;flex-direction:column}
+.hitem .ht b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hitem .ht small{color:var(--muted);font-size:.82rem;opacity:1}
+.hitem .go{font-size:1.6rem;color:var(--muted);flex:none}
+.hlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.45rem}
+.htabs{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.4rem}
+.htabs button{min-height:58px;font-size:1rem;border-width:2px;flex-direction:column;gap:0}
+.htabs button[aria-pressed=true]{background:var(--acc);color:#000;border-color:var(--acc)}
+body.ui-acc .homefoot button{font-size:.95rem;padding:.4rem .5rem}
+/* interface grands boutons : liste verticale comme avant */
+body.ui-dv .tiles{display:flex;flex-direction:column;gap:.6rem}
+body.ui-dv .tile .ti{font-size:1.3rem}
+body.ui-dv .tile small,body.ui-dv .hjoin small{display:none}
+body.ui-dv .homefoot{display:flex;flex-direction:column;gap:.6rem;margin-top:.3rem}
+body.ui-dv .homefoot small{display:inline;font-size:1rem;margin-left:.3rem}
+/* interface accompagnant : boutons un peu plus petits hors épreuve */
+body.ui-acc .screen:not(#run):not(#follow):not(#welcome) button.big:not(.tile):not(.hjoin){min-height:64px;font-size:1.12rem}
+body.ui-acc .screen:not(#run):not(#follow) .seg>button{min-height:70px}
+body.ui-acc .screen:not(#run):not(#follow):not(#welcome) main button:not(.big):not(.mini):not(.tile):not(.hitem){min-height:52px}
+/* choix de l'interface à l'ouverture */
+.welcome{justify-content:center;gap:1rem;max-width:560px;margin:0 auto;width:100%}
+.welcome .brand{justify-content:center}
+.wq{font-size:1.45rem;font-weight:700;text-align:center;margin:.4rem 0 0}
+.wbtn{flex-direction:column;min-height:28vh;font-size:1.6rem;border-radius:24px;gap:.35rem}
+.wbtn span{font-size:2.6rem;line-height:1}
+.wbtn small{font-size:1rem;font-weight:400;max-width:22em}
+.wrem{justify-content:center;font-size:1rem}
+.seg.seg3{flex-direction:column;gap:.45rem}
+.seg.seg3>button{min-height:62px;flex-direction:row;justify-content:flex-start;text-align:left;gap:.6rem;font-size:1.05rem}
+.seg.seg3>button small{font-size:.85rem}
+.brand h1:focus{outline:none}
 </style>
 </head>
 <body>
 <div id="simBanner" class="simbanner" hidden>MODE SIMULATION (position fictive)</div>
 
 <!-- ACCUEIL -->
+<!-- CHOIX DE L'INTERFACE (à l'ouverture) -->
+<section id="welcome" class="screen">
+  <main class="welcome">
+    <div class="brand"><div class="logo"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#000"/><rect x="96" y="96" width="320" height="320" rx="20" fill="#fff"/><polygon points="96,96 416,96 416,416" fill="#FF7A00"/><rect x="96" y="96" width="320" height="320" rx="20" fill="none" stroke="#FFD400" stroke-width="24"/></svg></div><div><h1 tabindex="-1">O'Guide</h1><p>Course d'orientation accessible</p></div></div>
+    <p class="wq" id="wQ">Qui utilise l'application ?</p>
+    <button type="button" class="primary wbtn" id="wDv"><span aria-hidden="true">👂</span> Déficience visuelle<small>Grands boutons, tout est lu à voix haute</small></button>
+    <button type="button" class="wbtn" id="wAcc"><span aria-hidden="true">🤝</span> Accompagnant<small>Enseignant, guide, organisateur : menus plus compacts</small></button>
+    <label class="chk wrem"><input type="checkbox" id="wRemember"> Retenir ce choix (modifiable dans les Réglages)</label>
+  </main>
+</section>
+
 <section id="home" class="screen active">
   <main class="home">
     <div class="brand">
-      <svg width="76" height="76" viewBox="0 0 100 100" aria-hidden="true"><rect x="10" y="10" width="80" height="80" rx="6" fill="#fff"/><polygon points="10,10 90,10 90,90" fill="#FF7A00"/><rect x="10" y="10" width="80" height="80" rx="6" fill="none" stroke="#FFD400" stroke-width="6"/></svg>
+      <div class="logo"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#000"/><rect x="96" y="96" width="320" height="320" rx="20" fill="#fff"/><polygon points="96,96 416,96 416,416" fill="#FF7A00"/><rect x="96" y="96" width="320" height="320" rx="20" fill="none" stroke="#FFD400" stroke-width="24"/></svg></div>
       <div><h1 tabindex="-1">O'Guide</h1><p>Course d'orientation accessible</p></div>
     </div>
     <div id="homeWarn"></div>
     <div id="homeExtra"></div>
-    <button class="primary big" id="hCreate">➕ Créer un parcours</button>
-    <button class="big" id="hLib">📚 Mes parcours&nbsp;<span id="hCount"></span></button>
-    <button class="big" id="hJoin">🏃 Rejoindre une course (code ou QR)</button>
-    <button class="big" id="hOrg">📡 Organiser une course</button>
-    <button class="big" id="hTrain">📍 Suivi en pratique libre</button>
-    <button class="big" id="hImport">📂 Importer un GPX</button>
-    <div class="row"><button id="hSettings">⚙ Réglages</button><button id="hHelp">❔ Aide</button></div>
+    <button class="primary big hjoin" id="hCreate">➕ Créer un parcours<small>en marchant sur le terrain, au GPS</small></button>
+    <div class="tiles">
+      <button type="button" class="tile big" id="hLib"><span class="ti" aria-hidden="true">📚</span><b>Mes parcours</b><small id="hCount"></small></button>
+      <button type="button" class="tile big" id="hJoin"><span class="ti" aria-hidden="true">🏃</span><b>Rejoindre une course</b><small>code ou QR code</small></button>
+      <button type="button" class="tile big" id="hOrg"><span class="ti" aria-hidden="true">📡</span><b>Organiser une course</b><small>suivi en direct</small></button>
+      <button type="button" class="tile big" id="hTrain"><span class="ti" aria-hidden="true">📍</span><b>Suivi en pratique libre</b><small>sans parcours</small></button>
+      <button type="button" class="tile big" id="hImport"><span class="ti" aria-hidden="true">📂</span><b>Importer un GPX</b><small>parcours reçu</small></button>
+      <button type="button" class="tile big" id="hSettings"><span class="ti" aria-hidden="true">⚙</span><b>Réglages</b><small>profil, voix, carte</small></button>
+    </div>
+    <div class="homefoot">
+      <button type="button" class="big" id="hHist">🗂 Historique<small id="hHistN"></small></button>
+      <button type="button" class="big" id="hHelp">❔ Aide</button>
+      <button type="button" class="big" id="hUi">↔ <span id="hUiTxt">Interface</span></button>
+    </div>
     <button id="hInstall" hidden>📲 Installer l'appli sur ce téléphone</button>
     <p class="hint" id="hVersion"></p>
     <p class="sign">Greg Meyer, STAPS Avignon</p>
+  </main>
+</section>
+
+<!-- HISTORIQUE -->
+<section id="history" class="screen">
+  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1">Historique</h1></header>
+  <main>
+    <div class="htabs" role="group" aria-label="Type d'historique"><button type="button" data-ht="run" aria-pressed="true">🏃 Mes épreuves<small id="htRunN"></small></button><button type="button" data-ht="org" aria-pressed="false">📡 Organisées<small id="htOrgN"></small></button></div>
+    <ul id="histList" class="hlist"></ul>
   </main>
 </section>
 
@@ -1001,6 +1088,14 @@ ul.chat .sys{text-align:center;color:var(--warn);font-size:.85rem}
       <label>Nom (facultatif)<input type="text" id="partName" autocomplete="off" placeholder="ex. Julie"></label>
     </section>
     <div id="settingsBox">
+    <section class="card no-run">
+      <h2>Interface des menus</h2>
+      <div class="seg seg3" data-s="uiMode">
+        <button type="button" data-v="dv" aria-pressed="false">👂 Grands boutons<small>déficience visuelle</small></button>
+        <button type="button" data-v="acc" aria-pressed="false">🤝 Compacte<small>accompagnant</small></button>
+        <button type="button" data-v="ask" aria-pressed="false">❓ Demander<small>à chaque ouverture</small></button>
+      </div>
+    </section>
     <section class="card">
       <h2>Profil</h2>
       <div class="seg" data-s="profile">
@@ -1104,7 +1199,7 @@ ul.chat .sys{text-align:center;color:var(--warn);font-size:.85rem}
 
 <!-- RESULTATS -->
 <section id="results" class="screen">
-  <header class="bar"><button class="back" data-go="home" aria-label="Retour à l'accueil">←</button><h1 tabindex="-1">Résultats</h1></header>
+  <header class="bar"><button class="back" data-go="back" aria-label="Retour">←</button><h1 tabindex="-1">Résultats</h1></header>
   <main>
     <div id="rsHead"></div>
     <div class="bigtime" id="rsTotal"></div>
@@ -1154,7 +1249,7 @@ ul.chat .sys{text-align:center;color:var(--warn);font-size:.85rem}
 
 <!-- ORGANISER : SUIVI -->
 <section id="org" class="screen">
-  <header class="bar"><button class="back" data-go="home" aria-label="Retour">←</button><h1 tabindex="-1" id="orgTitle">Course</h1><span id="orgNet" class="net">📡</span></header>
+  <header class="bar"><button class="back" data-go="back" aria-label="Retour">←</button><h1 tabindex="-1" id="orgTitle">Course</h1><span id="orgNet" class="net">📡</span></header>
   <div class="orgbar" id="orgbarLive">
     <span id="orgStatus" class="tag"></span>
     <button type="button" id="orgQR">🔗 Code / QR</button>
@@ -3573,7 +3668,7 @@ var qrcode = function() {
 </script>
 <script>'use strict';
 (function(){
-const VERSION='1.7.0';
+const VERSION='1.8.0';
 const CAP=window.capacitorExports||null;
 const NATIVE=!!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform());
 const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications'),app:CAP.registerPlugin('App')}:{};
@@ -3593,7 +3688,7 @@ const store={
   del(k){try{localStorage.removeItem(k)}catch(e){}}
 };
 const K={courses:'oguide.courses.v1',settings:'oguide.settings.v1',draft:'oguide.draft.v1',results:'oguide.results.v1',me:'oguide.me.v1',orgs:'oguide.orgs.v1',follow:'oguide.follow.v1',active:'oguide.active.v1'};
-const DEFAULTS={profile:'blind',voiceMode:'app',interval:30,zoneInterval:15,dirFormat:'clock',headingRef:'auto',rate:1,beep:true,approachDist:50,stereo:false,radius:10,vibrate:true,layer:'ign',contrast:'high',mapStyle:'paths-light',showRoute:false,showMe:true,showDone:false,avgSeconds:5,recordTrack:true,sim:false,_v:3};
+const DEFAULTS={uiMode:'ask',lastUi:'dv',profile:'blind',voiceMode:'app',interval:30,zoneInterval:15,dirFormat:'clock',headingRef:'auto',rate:1,beep:true,approachDist:50,stereo:false,radius:10,vibrate:true,layer:'ign',contrast:'high',mapStyle:'paths-light',showRoute:false,showMe:true,showDone:false,avgSeconds:5,recordTrack:true,sim:false,_v:3};
 let settings=Object.assign({},DEFAULTS,store.get(K.settings,{}));
 const saveSettings=()=>store.set(K.settings,settings);
 if((settings._v||1)<2)Object.assign(settings,{approachDist:50,dirFormat:'clock',mapStyle:'paths-light',_v:2});
@@ -4011,7 +4106,7 @@ async function shareFile(name,text){
 
 /* ---------------- Navigation ---------------- */
 let current='home';
-const PARENT={create:'home',library:'home',detail:'library',setup:'home',results:'home',help:'home',run:'home',join:'home',orgsetup:'detail',org:'home',follow:'home'};
+const PARENT={create:'home',library:'home',detail:'library',setup:'home',results:'home',help:'home',run:'home',join:'home',orgsetup:'detail',org:'home',follow:'home',history:'home',welcome:'home'};
 const leaveHooks={create:()=>Create.close(),detail:()=>Lib.leaveDetail(),org:()=>Org.leave(),join:()=>Join.leave()};
 function show(id){
   if(id===current)return;
@@ -4021,7 +4116,9 @@ function show(id){
   if(id!=='home'&&prev==='home')try{history.pushState({s:id},'')}catch(e){}
   const h=$('#'+id+' h1');if(h)setTimeout(()=>h.focus({preventScroll:true}),30);
   if(id==='home')Home.render();
+  if(id==='history')History.render();
 }
+function goParent(){const par=PARENT[current]||'home';if(par==='library')Lib.open();else show(par)}
 window.addEventListener('popstate',()=>{
   if(current==='home')return;
   try{history.pushState({s:current},'')}catch(e){}
@@ -4031,35 +4128,75 @@ window.addEventListener('popstate',()=>{
   if(current==='orgsetup'&&Lib.cur){Lib.openDetail(Lib.cur.id);return}
   if(current==='create'){Create.askBack();return}
   if(current==='setup'){Setup.back();return}
-  const par=PARENT[current]||'home';if(par==='library')Lib.open();else show(par);
+  goParent();
 });
-document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){const g=b.dataset.go;if(g==='library')Lib.open();else show(g)}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){const g=b.dataset.go;if(g==='back')goParent();else if(g==='library')Lib.open();else show(g)}});
+
+/* ---------------- Interface : grands boutons (déficience visuelle) ou compacte (accompagnant) ---------------- */
+const uiNow=()=>settings.uiMode==='acc'||settings.uiMode==='dv'?settings.uiMode:(settings.lastUi==='acc'?'acc':'dv');
+function applyUi(){const m=uiNow();document.body.classList.toggle('ui-acc',m==='acc');document.body.classList.toggle('ui-dv',m!=='acc');
+  const t=$('#hUiTxt');if(t)t.textContent=m==='acc'?'Grands boutons':'Interface compacte'}
+const Welcome={
+  ask(){return new Promise(res=>{
+    this.done=res;show('welcome');$('#wRemember').checked=false;
+    const last=uiNow();$('#wDv').classList.toggle('primary',last!=='acc');$('#wAcc').classList.toggle('primary',last==='acc');
+    setTimeout(()=>Voice.say('O\'Guide. Choisissez l\'interface. En haut de l\'écran : déficience visuelle, grands boutons. En bas : accompagnant.'),400);
+  })},
+  pick(m){settings.lastUi=m;if($('#wRemember').checked)settings.uiMode=m;saveSettings();applyUi();Voice.stop&&Voice.stop();
+    Voice.say(m==='acc'?'Interface accompagnant.':'Interface grands boutons.');show('home');const f=this.done;this.done=null;if(f)f(m)}
+};
+$('#wDv').onclick=()=>Welcome.pick('dv');
+$('#wAcc').onclick=()=>Welcome.pick('acc');
 function applySimUI(){$('#simBanner').hidden=!settings.sim;document.body.classList.toggle('sim',!!settings.sim)}
 
 /* ---------------- Accueil ---------------- */
+const orgOngoing=o=>o.status!=='closed'&&o.status!=='deleted'&&Date.now()-new Date(o.created).getTime()<3*86400000;
+const orgRow=o=>`<button type="button" class="hitem" data-org="${o.code}"><span class="hi" aria-hidden="true">${o.kind==='train'?'📍':'📡'}</span><span class="ht"><b>${esc(o.name)}</b><small>${o.coorg?'👥 co-organisée · ':''}${Org.statusLabel(o.status,o.kind)} · ${new Date(o.created).toLocaleDateString('fr-FR')}</small></span><span class="go" aria-hidden="true">›</span></button>`;
 const Home={deferred:null,
   render(){
-    $('#hCount').textContent=courses.length?'('+courses.length+')':'';
+    PARENT.org='home';PARENT.results='home';
+    $('#hCount').textContent=courses.length?courses.length+' parcours':'aucun pour l\'instant';
     const w=[];
     if(!NATIVE&&!window.isSecureContext)w.push('Le GPS ne fonctionne que si l\'appli est ouverte en <b>https</b>.');
     if(!NATIVE&&!('speechSynthesis' in window))w.push('Synthèse vocale indisponible dans ce navigateur : utilise Chrome (Android) ou Safari (iPhone).');
     $('#homeWarn').innerHTML=w.map(x=>`<div class="warnbox">${x}</div>`).join('')+(IOS&&!STANDALONE&&!NATIVE?`<div class="ioshint">📲 Sur iPhone : touche <span class="shr">Partager ⬆︎</span> en bas de Safari, puis « Sur l'écran d'accueil ». O'Guide s'ouvrira ensuite comme une appli, en plein écran et même sans réseau.</div>`:'');
-    const act=store.get(K.active,null),fw=store.get(K.follow,null),orgs=store.get(K.orgs,[]);let h='';
+    const act=store.get(K.active,null),fw=store.get(K.follow,null),orgs=store.get(K.orgs,[]),live=orgs.filter(orgOngoing).reverse();let h='';
     if(fw)h+=`<button class="primary big" id="hFollow">📍 Suivi en cours : ${esc(fw.sname||'')}</button>`;
     if(act)h+=`<button class="primary big" id="hResume">⏯ Reprendre l'épreuve : ${esc(act.course.name)}</button>`;
-    if(orgs.length)h+=`<section class="card"><h2>Courses et séances organisées</h2>${orgs.slice(-5).reverse().map(o=>`<button type="button" data-org="${o.code}" style="justify-content:space-between"><span>${o.kind==='train'?'📍':'📡'} ${esc(o.name)}</span><span class="muted">${o.coorg?'👥 ':''}${Org.statusLabel(o.status,o.kind)} · ${new Date(o.created).toLocaleDateString('fr-FR')}</span></button>`).join('')}</section>`;
+    if(live.length)h+=`<section class="now"><h2><span class="livedot" aria-hidden="true"></span>En cours</h2>${live.map(orgRow).join('')}</section>`;
     $('#homeExtra').innerHTML=h;
     const hr=$('#hResume');if(hr)hr.onclick=()=>Run.resumeActive();
     const hf=$('#hFollow');if(hf)hf.onclick=()=>Follow.resume();
+    const nh=orgs.length-live.length+results.length;$('#hHistN').textContent=nh?nh+(nh>1?' éléments':' élément'):'vide';
+    applyUi();
     $('#hVersion').textContent='Version '+VERSION+(NATIVE?' · application Android':' · fonctionne hors connexion une fois installée');
   }
 };
+/* ---------------- Historique : épreuves réalisées et courses organisées passées ---------------- */
+const History={tab:'run',
+  render(){
+    const orgs=store.get(K.orgs,[]).filter(o=>!orgOngoing(o)).reverse(),rs=results.slice().reverse();
+    $('#htOrgN').textContent=orgs.length;$('#htRunN').textContent=rs.length;
+    $$('.htabs [data-ht]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ht===this.tab)));
+    $('#histList').innerHTML=this.tab==='org'
+      ?(orgs.length?orgs.map(o=>`<li>${orgRow(o)}</li>`).join(''):'<li class="hint">Aucune course ou séance terminée. Les courses en cours restent sur l\'accueil.</li>')
+      :(rs.length?rs.map(r=>`<li><button type="button" class="hitem" data-res="${r.id}"><span class="hi" aria-hidden="true">${r.raceCode?'📡':'🏃'}</span><span class="ht"><b>${esc(r.courseName)}</b><small>${new Date(r.date).toLocaleDateString('fr-FR')}${r.participant?' · '+esc(r.participant):''} · ${fmtTime(r.total)}${r.finished?'':' · arrêtée avant la fin'}</small></span><span class="go" aria-hidden="true">›</span></button></li>`).join(''):'<li class="hint">Aucune épreuve réalisée pour l\'instant.</li>');
+  }
+};
+$('.htabs').addEventListener('click',e=>{const b=e.target.closest('[data-ht]');if(b){History.tab=b.dataset.ht;History.render()}});
+$('#histList').addEventListener('click',e=>{
+  const o=e.target.closest('[data-org]');if(o){Org.resume(o.dataset.org);PARENT.org='history';return}
+  const b=e.target.closest('[data-res]');if(b){const r=results.find(x=>x.id===b.dataset.res);if(r){Results.show(r);PARENT.results='history'}}
+});
+$('#hHist').onclick=()=>show('history');
+$('#hUi').onclick=()=>{const m=uiNow()==='acc'?'dv':'acc';settings.lastUi=m;if(settings.uiMode!=='ask')settings.uiMode=m;saveSettings();applyUi();
+  toast(m==='acc'?'🤝 Interface compacte (accompagnant)':'👂 Interface grands boutons');Voice.say(m==='acc'?'Interface compacte.':'Interface grands boutons.')};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();Home.deferred=e;$('#hInstall').hidden=false});
 $('#hInstall').onclick=async()=>{if(!Home.deferred)return;Home.deferred.prompt();try{await Home.deferred.userChoice}catch(e){}Home.deferred=null;$('#hInstall').hidden=true};
 $('#hCreate').onclick=()=>Create.begin();
 $('#hJoin').onclick=()=>Join.open();
 $('#hOrg').onclick=()=>{if(!courses.length){toast('Crée ou importe d\'abord un parcours.',true);return}Lib.open(true)};
-$('#homeExtra').addEventListener('click',e=>{const b=e.target.closest('[data-org]');if(b)Org.resume(b.dataset.org)});
+$('#homeExtra').addEventListener('click',e=>{const b=e.target.closest('[data-org]');if(b){PARENT.org='home';Org.resume(b.dataset.org)}});
 $('#hLib').onclick=()=>Lib.open();
 $('#hImport').onclick=$('#libImport').onclick=()=>{$('#gpxInput').value='';$('#gpxInput').click()};
 $('#hSettings').onclick=()=>Setup.open(null);
@@ -4284,6 +4421,7 @@ function bindSettings(){
 }
 function onSetting(k){
   const live=current==='run'&&!Run.ended;
+  if(k==='uiMode'){if(settings.uiMode!=='ask')settings.lastUi=settings.uiMode;saveSettings();applyUi()}
   if(k==='layer'||k==='contrast'||k==='mapStyle'){Run.pathsDrawn=false;allMaps.forEach(setMapStyle);if(Lib.map&&Lib.cur)Lib.draw(false);if(live){Run.ensurePaths();Run.redrawMap()}}
   if(k==='sim'){applySimUI();GPS.stop();toast(settings.sim?'Mode simulation activé':'Mode simulation désactivé : retour au vrai GPS');if(live||current==='create')GPS.start();if(live)simPad($('#runSimPad'),Run.simExtra())}
   if(!live)return;
@@ -5754,7 +5892,7 @@ $('#rpSlider').addEventListener('input',e=>{Replay.T=Replay.t0+(Replay.t1-Replay
 $('#rpLegend').addEventListener('change',e=>{const c=e.target.closest('[data-rp]');if(!c)return;if(c.checked)Replay.hidden.delete(c.dataset.rp);else Replay.hidden.add(c.dataset.rp);Replay.draw()});
 
 /* ---------------- Démarrage ---------------- */
-Voice.init();applySimUI();Home.render();
+Voice.init();applySimUI();applyUi();Home.render();
 if(!Compass.needsPerm)Compass.enable();
 if(NATIVE){$('#dtDownload').textContent='💾 Enregistrer le GPX';$('#rsDownload').textContent='💾 Enregistrer (GPX)';$('#rsCopy').textContent='📤 Envoyer le résumé'}
 try{history.replaceState({s:'home'},'')}catch(e){}
@@ -5778,6 +5916,7 @@ if(NATIVE&&P.app){try{P.app.addListener('appUrlOpen',e=>{const u=e&&e.url,g=orga
   if(NATIVE&&P.app){try{const r=await P.app.getLaunchUrl(),u=r&&r.url,lg=orgaLink(u);if(lg){openFromLink(null,lg);return}const lc=linkCode(u);if(lc){openFromLink(lc);return}}catch(e){}}
   if(store.get(K.follow,null)){Follow.resume();return}
   const act=store.get(K.active,null);
+  if(!(act&&act.course)&&settings.uiMode==='ask')await Welcome.ask();
   if(act&&act.course){Voice.say('Une épreuve n\'est pas terminée. Touchez Reprendre l\'épreuve pour continuer.');
     const v=await modal({title:'Épreuve en cours',body:`<p><b>${esc(act.course.name)}</b></p><p class="hint">Cette épreuve n'est pas terminée.</p>`,buttons:[{label:'⏯ Reprendre l\'épreuve',value:true,primary:true},{label:'Plus tard',value:false}]});
     if(v)Run.resumeActive();return}

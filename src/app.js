@@ -1,6 +1,6 @@
 'use strict';
 (function(){
-const VERSION='1.7.0';
+const VERSION='1.8.0';
 const CAP=window.capacitorExports||null;
 const NATIVE=!!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform());
 const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications'),app:CAP.registerPlugin('App')}:{};
@@ -20,7 +20,7 @@ const store={
   del(k){try{localStorage.removeItem(k)}catch(e){}}
 };
 const K={courses:'oguide.courses.v1',settings:'oguide.settings.v1',draft:'oguide.draft.v1',results:'oguide.results.v1',me:'oguide.me.v1',orgs:'oguide.orgs.v1',follow:'oguide.follow.v1',active:'oguide.active.v1'};
-const DEFAULTS={profile:'blind',voiceMode:'app',interval:30,zoneInterval:15,dirFormat:'clock',headingRef:'auto',rate:1,beep:true,approachDist:50,stereo:false,radius:10,vibrate:true,layer:'ign',contrast:'high',mapStyle:'paths-light',showRoute:false,showMe:true,showDone:false,avgSeconds:5,recordTrack:true,sim:false,_v:3};
+const DEFAULTS={uiMode:'ask',lastUi:'dv',profile:'blind',voiceMode:'app',interval:30,zoneInterval:15,dirFormat:'clock',headingRef:'auto',rate:1,beep:true,approachDist:50,stereo:false,radius:10,vibrate:true,layer:'ign',contrast:'high',mapStyle:'paths-light',showRoute:false,showMe:true,showDone:false,avgSeconds:5,recordTrack:true,sim:false,_v:3};
 let settings=Object.assign({},DEFAULTS,store.get(K.settings,{}));
 const saveSettings=()=>store.set(K.settings,settings);
 if((settings._v||1)<2)Object.assign(settings,{approachDist:50,dirFormat:'clock',mapStyle:'paths-light',_v:2});
@@ -438,7 +438,7 @@ async function shareFile(name,text){
 
 /* ---------------- Navigation ---------------- */
 let current='home';
-const PARENT={create:'home',library:'home',detail:'library',setup:'home',results:'home',help:'home',run:'home',join:'home',orgsetup:'detail',org:'home',follow:'home'};
+const PARENT={create:'home',library:'home',detail:'library',setup:'home',results:'home',help:'home',run:'home',join:'home',orgsetup:'detail',org:'home',follow:'home',history:'home',welcome:'home'};
 const leaveHooks={create:()=>Create.close(),detail:()=>Lib.leaveDetail(),org:()=>Org.leave(),join:()=>Join.leave()};
 function show(id){
   if(id===current)return;
@@ -448,7 +448,9 @@ function show(id){
   if(id!=='home'&&prev==='home')try{history.pushState({s:id},'')}catch(e){}
   const h=$('#'+id+' h1');if(h)setTimeout(()=>h.focus({preventScroll:true}),30);
   if(id==='home')Home.render();
+  if(id==='history')History.render();
 }
+function goParent(){const par=PARENT[current]||'home';if(par==='library')Lib.open();else show(par)}
 window.addEventListener('popstate',()=>{
   if(current==='home')return;
   try{history.pushState({s:current},'')}catch(e){}
@@ -458,35 +460,75 @@ window.addEventListener('popstate',()=>{
   if(current==='orgsetup'&&Lib.cur){Lib.openDetail(Lib.cur.id);return}
   if(current==='create'){Create.askBack();return}
   if(current==='setup'){Setup.back();return}
-  const par=PARENT[current]||'home';if(par==='library')Lib.open();else show(par);
+  goParent();
 });
-document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){const g=b.dataset.go;if(g==='library')Lib.open();else show(g)}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){const g=b.dataset.go;if(g==='back')goParent();else if(g==='library')Lib.open();else show(g)}});
+
+/* ---------------- Interface : grands boutons (déficience visuelle) ou compacte (accompagnant) ---------------- */
+const uiNow=()=>settings.uiMode==='acc'||settings.uiMode==='dv'?settings.uiMode:(settings.lastUi==='acc'?'acc':'dv');
+function applyUi(){const m=uiNow();document.body.classList.toggle('ui-acc',m==='acc');document.body.classList.toggle('ui-dv',m!=='acc');
+  const t=$('#hUiTxt');if(t)t.textContent=m==='acc'?'Grands boutons':'Interface compacte'}
+const Welcome={
+  ask(){return new Promise(res=>{
+    this.done=res;show('welcome');$('#wRemember').checked=false;
+    const last=uiNow();$('#wDv').classList.toggle('primary',last!=='acc');$('#wAcc').classList.toggle('primary',last==='acc');
+    setTimeout(()=>Voice.say('O\'Guide. Choisissez l\'interface. En haut de l\'écran : déficience visuelle, grands boutons. En bas : accompagnant.'),400);
+  })},
+  pick(m){settings.lastUi=m;if($('#wRemember').checked)settings.uiMode=m;saveSettings();applyUi();Voice.stop&&Voice.stop();
+    Voice.say(m==='acc'?'Interface accompagnant.':'Interface grands boutons.');show('home');const f=this.done;this.done=null;if(f)f(m)}
+};
+$('#wDv').onclick=()=>Welcome.pick('dv');
+$('#wAcc').onclick=()=>Welcome.pick('acc');
 function applySimUI(){$('#simBanner').hidden=!settings.sim;document.body.classList.toggle('sim',!!settings.sim)}
 
 /* ---------------- Accueil ---------------- */
+const orgOngoing=o=>o.status!=='closed'&&o.status!=='deleted'&&Date.now()-new Date(o.created).getTime()<3*86400000;
+const orgRow=o=>`<button type="button" class="hitem" data-org="${o.code}"><span class="hi" aria-hidden="true">${o.kind==='train'?'📍':'📡'}</span><span class="ht"><b>${esc(o.name)}</b><small>${o.coorg?'👥 co-organisée · ':''}${Org.statusLabel(o.status,o.kind)} · ${new Date(o.created).toLocaleDateString('fr-FR')}</small></span><span class="go" aria-hidden="true">›</span></button>`;
 const Home={deferred:null,
   render(){
-    $('#hCount').textContent=courses.length?'('+courses.length+')':'';
+    PARENT.org='home';PARENT.results='home';
+    $('#hCount').textContent=courses.length?courses.length+' parcours':'aucun pour l\'instant';
     const w=[];
     if(!NATIVE&&!window.isSecureContext)w.push('Le GPS ne fonctionne que si l\'appli est ouverte en <b>https</b>.');
     if(!NATIVE&&!('speechSynthesis' in window))w.push('Synthèse vocale indisponible dans ce navigateur : utilise Chrome (Android) ou Safari (iPhone).');
     $('#homeWarn').innerHTML=w.map(x=>`<div class="warnbox">${x}</div>`).join('')+(IOS&&!STANDALONE&&!NATIVE?`<div class="ioshint">📲 Sur iPhone : touche <span class="shr">Partager ⬆︎</span> en bas de Safari, puis « Sur l'écran d'accueil ». O'Guide s'ouvrira ensuite comme une appli, en plein écran et même sans réseau.</div>`:'');
-    const act=store.get(K.active,null),fw=store.get(K.follow,null),orgs=store.get(K.orgs,[]);let h='';
+    const act=store.get(K.active,null),fw=store.get(K.follow,null),orgs=store.get(K.orgs,[]),live=orgs.filter(orgOngoing).reverse();let h='';
     if(fw)h+=`<button class="primary big" id="hFollow">📍 Suivi en cours : ${esc(fw.sname||'')}</button>`;
     if(act)h+=`<button class="primary big" id="hResume">⏯ Reprendre l'épreuve : ${esc(act.course.name)}</button>`;
-    if(orgs.length)h+=`<section class="card"><h2>Courses et séances organisées</h2>${orgs.slice(-5).reverse().map(o=>`<button type="button" data-org="${o.code}" style="justify-content:space-between"><span>${o.kind==='train'?'📍':'📡'} ${esc(o.name)}</span><span class="muted">${o.coorg?'👥 ':''}${Org.statusLabel(o.status,o.kind)} · ${new Date(o.created).toLocaleDateString('fr-FR')}</span></button>`).join('')}</section>`;
+    if(live.length)h+=`<section class="now"><h2><span class="livedot" aria-hidden="true"></span>En cours</h2>${live.map(orgRow).join('')}</section>`;
     $('#homeExtra').innerHTML=h;
     const hr=$('#hResume');if(hr)hr.onclick=()=>Run.resumeActive();
     const hf=$('#hFollow');if(hf)hf.onclick=()=>Follow.resume();
+    const nh=orgs.length-live.length+results.length;$('#hHistN').textContent=nh?nh+(nh>1?' éléments':' élément'):'vide';
+    applyUi();
     $('#hVersion').textContent='Version '+VERSION+(NATIVE?' · application Android':' · fonctionne hors connexion une fois installée');
   }
 };
+/* ---------------- Historique : épreuves réalisées et courses organisées passées ---------------- */
+const History={tab:'run',
+  render(){
+    const orgs=store.get(K.orgs,[]).filter(o=>!orgOngoing(o)).reverse(),rs=results.slice().reverse();
+    $('#htOrgN').textContent=orgs.length;$('#htRunN').textContent=rs.length;
+    $$('.htabs [data-ht]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.ht===this.tab)));
+    $('#histList').innerHTML=this.tab==='org'
+      ?(orgs.length?orgs.map(o=>`<li>${orgRow(o)}</li>`).join(''):'<li class="hint">Aucune course ou séance terminée. Les courses en cours restent sur l\'accueil.</li>')
+      :(rs.length?rs.map(r=>`<li><button type="button" class="hitem" data-res="${r.id}"><span class="hi" aria-hidden="true">${r.raceCode?'📡':'🏃'}</span><span class="ht"><b>${esc(r.courseName)}</b><small>${new Date(r.date).toLocaleDateString('fr-FR')}${r.participant?' · '+esc(r.participant):''} · ${fmtTime(r.total)}${r.finished?'':' · arrêtée avant la fin'}</small></span><span class="go" aria-hidden="true">›</span></button></li>`).join(''):'<li class="hint">Aucune épreuve réalisée pour l\'instant.</li>');
+  }
+};
+$('.htabs').addEventListener('click',e=>{const b=e.target.closest('[data-ht]');if(b){History.tab=b.dataset.ht;History.render()}});
+$('#histList').addEventListener('click',e=>{
+  const o=e.target.closest('[data-org]');if(o){Org.resume(o.dataset.org);PARENT.org='history';return}
+  const b=e.target.closest('[data-res]');if(b){const r=results.find(x=>x.id===b.dataset.res);if(r){Results.show(r);PARENT.results='history'}}
+});
+$('#hHist').onclick=()=>show('history');
+$('#hUi').onclick=()=>{const m=uiNow()==='acc'?'dv':'acc';settings.lastUi=m;if(settings.uiMode!=='ask')settings.uiMode=m;saveSettings();applyUi();
+  toast(m==='acc'?'🤝 Interface compacte (accompagnant)':'👂 Interface grands boutons');Voice.say(m==='acc'?'Interface compacte.':'Interface grands boutons.')};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();Home.deferred=e;$('#hInstall').hidden=false});
 $('#hInstall').onclick=async()=>{if(!Home.deferred)return;Home.deferred.prompt();try{await Home.deferred.userChoice}catch(e){}Home.deferred=null;$('#hInstall').hidden=true};
 $('#hCreate').onclick=()=>Create.begin();
 $('#hJoin').onclick=()=>Join.open();
 $('#hOrg').onclick=()=>{if(!courses.length){toast('Crée ou importe d\'abord un parcours.',true);return}Lib.open(true)};
-$('#homeExtra').addEventListener('click',e=>{const b=e.target.closest('[data-org]');if(b)Org.resume(b.dataset.org)});
+$('#homeExtra').addEventListener('click',e=>{const b=e.target.closest('[data-org]');if(b){PARENT.org='home';Org.resume(b.dataset.org)}});
 $('#hLib').onclick=()=>Lib.open();
 $('#hImport').onclick=$('#libImport').onclick=()=>{$('#gpxInput').value='';$('#gpxInput').click()};
 $('#hSettings').onclick=()=>Setup.open(null);
@@ -711,6 +753,7 @@ function bindSettings(){
 }
 function onSetting(k){
   const live=current==='run'&&!Run.ended;
+  if(k==='uiMode'){if(settings.uiMode!=='ask')settings.lastUi=settings.uiMode;saveSettings();applyUi()}
   if(k==='layer'||k==='contrast'||k==='mapStyle'){Run.pathsDrawn=false;allMaps.forEach(setMapStyle);if(Lib.map&&Lib.cur)Lib.draw(false);if(live){Run.ensurePaths();Run.redrawMap()}}
   if(k==='sim'){applySimUI();GPS.stop();toast(settings.sim?'Mode simulation activé':'Mode simulation désactivé : retour au vrai GPS');if(live||current==='create')GPS.start();if(live)simPad($('#runSimPad'),Run.simExtra())}
   if(!live)return;
@@ -1046,7 +1089,7 @@ $('#rsDownload').onclick=()=>saveFile(Results.fname(),resultToGPX(Results.cur));
 $('#rsCopy').onclick=async()=>{if(NATIVE){try{await P.share.share({title:'Résultats O\'Guide',text:Results.summary(),dialogTitle:'Envoyer le résumé'})}catch(e){}return}try{await navigator.clipboard.writeText(Results.summary());toast('Résumé copié')}catch(e){toast('Copie impossible dans ce navigateur',true)}};
 
 /* ---------------- Démarrage ---------------- */
-Voice.init();applySimUI();Home.render();
+Voice.init();applySimUI();applyUi();Home.render();
 if(!Compass.needsPerm)Compass.enable();
 if(NATIVE){$('#dtDownload').textContent='💾 Enregistrer le GPX';$('#rsDownload').textContent='💾 Enregistrer (GPX)';$('#rsCopy').textContent='📤 Envoyer le résumé'}
 try{history.replaceState({s:'home'},'')}catch(e){}
@@ -1070,6 +1113,7 @@ if(NATIVE&&P.app){try{P.app.addListener('appUrlOpen',e=>{const u=e&&e.url,g=orga
   if(NATIVE&&P.app){try{const r=await P.app.getLaunchUrl(),u=r&&r.url,lg=orgaLink(u);if(lg){openFromLink(null,lg);return}const lc=linkCode(u);if(lc){openFromLink(lc);return}}catch(e){}}
   if(store.get(K.follow,null)){Follow.resume();return}
   const act=store.get(K.active,null);
+  if(!(act&&act.course)&&settings.uiMode==='ask')await Welcome.ask();
   if(act&&act.course){Voice.say('Une épreuve n\'est pas terminée. Touchez Reprendre l\'épreuve pour continuer.');
     const v=await modal({title:'Épreuve en cours',body:`<p><b>${esc(act.course.name)}</b></p><p class="hint">Cette épreuve n'est pas terminée.</p>`,buttons:[{label:'⏯ Reprendre l\'épreuve',value:true,primary:true},{label:'Plus tard',value:false}]});
     if(v)Run.resumeActive();return}
