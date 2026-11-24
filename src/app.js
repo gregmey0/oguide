@@ -1,6 +1,6 @@
 'use strict';
 (function(){
-const VERSION='1.6.0';
+const VERSION='1.7.0';
 const CAP=window.capacitorExports||null;
 const NATIVE=!!(window.Capacitor&&typeof window.Capacitor.isNativePlatform==='function'&&window.Capacitor.isNativePlatform());
 const P=NATIVE&&CAP?{geo:CAP.registerPlugin('BackgroundGeolocation'),tts:CAP.registerPlugin('TextToSpeech'),fs:CAP.registerPlugin('Filesystem'),share:CAP.registerPlugin('Share'),awake:CAP.registerPlugin('KeepAwake'),notif:CAP.registerPlugin('LocalNotifications'),app:CAP.registerPlugin('App')}:{};
@@ -243,7 +243,7 @@ function setMapStyle(m){
   const st=mapStyleOf(m),c=m.getContainer();c.classList.remove('ct-normal','ct-high','ct-invert','ms-light','ms-dark');
   if(m._base){m.removeLayer(m._base);m._base=null}
   if(st==='paths-dark'){c.classList.add('ms-dark');return}
-  const ly=LAYERS[settings.layer]||LAYERS.osm;m._base=L.tileLayer(ly.url,ly.o).addTo(m);
+  const ly=LAYERS[(m._kind==='org'&&settings.orgLayer)||settings.layer]||LAYERS.osm;m._base=L.tileLayer(ly.url,ly.o).addTo(m);
   c.classList.add(st==='paths-light'?'ms-light':'ct-'+(m._kind==='org'?'normal':settings.contrast));
 }
 function ctrlIcon(pts,i,{size=40,cls=''}={}){
@@ -474,7 +474,7 @@ const Home={deferred:null,
     const act=store.get(K.active,null),fw=store.get(K.follow,null),orgs=store.get(K.orgs,[]);let h='';
     if(fw)h+=`<button class="primary big" id="hFollow">📍 Suivi en cours : ${esc(fw.sname||'')}</button>`;
     if(act)h+=`<button class="primary big" id="hResume">⏯ Reprendre l'épreuve : ${esc(act.course.name)}</button>`;
-    if(orgs.length)h+=`<section class="card"><h2>Courses et séances organisées</h2>${orgs.slice(-5).reverse().map(o=>`<button type="button" data-org="${o.code}" style="justify-content:space-between"><span>${o.kind==='train'?'📍':'📡'} ${esc(o.name)}</span><span class="muted">${Org.statusLabel(o.status,o.kind)} · ${new Date(o.created).toLocaleDateString('fr-FR')}</span></button>`).join('')}</section>`;
+    if(orgs.length)h+=`<section class="card"><h2>Courses et séances organisées</h2>${orgs.slice(-5).reverse().map(o=>`<button type="button" data-org="${o.code}" style="justify-content:space-between"><span>${o.kind==='train'?'📍':'📡'} ${esc(o.name)}</span><span class="muted">${o.coorg?'👥 ':''}${Org.statusLabel(o.status,o.kind)} · ${new Date(o.created).toLocaleDateString('fr-FR')}</span></button>`).join('')}</section>`;
     $('#homeExtra').innerHTML=h;
     const hr=$('#hResume');if(hr)hr.onclick=()=>Run.resumeActive();
     const hf=$('#hFollow');if(hf)hf.onclick=()=>Follow.resume();
@@ -739,10 +739,12 @@ const Run={map:null,lay:null,
     Object.assign(this,{c:course,pts:course.points,idx:rs?rs.idx:0,participant,splits:rs?rs.splits:[],track:rs?rs.track||[]:[],t0:rs?rs.t0:null,pausedAt:null,pausedTotal:rs?rs.pausedTotal||0:0,lastAnn:0,lastAnnDist:null,inZone:false,insideSince:null,
       link,race:rinfo?{code:rinfo.code,opts:Object.assign({startType:'individual',radius:10},rinfo.opts)}:null,pid:rs&&rs.pid||uid(),finishAt:null,rstatus:null,lastPub:0,lastTrk:0,lastSave:0,waiting:false,
       lastFixT:Date.now(),lostSaid:false,ended:false,d:null,b:null,follow:true,lastFit:0,id:rs?rs.id:uid(),date:rs?rs.date:new Date().toISOString(),meM:null,accC:null,line:null,
-      route:null,lastRouteT:0,pathsDrawn:false,routeLine:null,routeCase:null});
+      route:null,lastRouteT:0,pathsDrawn:false,routeLine:null,routeCase:null,dist:rs&&rs.dist||0,dlast:null,sm:new SpeedMeter(),endBy:null});
+    {const lt=rs&&this.t0&&this.track[this.track.length-1];if(lt)this.dlast={lat:lt[0],lon:lt[1],t:lt[2]}}
     $('#runRoute').textContent='';
     if(this.lay)this.lay.clearLayers();
     if(this.link)this.link.onRace=r=>this.onRace(r);
+    if(this.link)PMsg.start({link:this.link,pid:this.pid,name:participant||'Coureur',saved:rs&&rs.msg,onChange:()=>{this.save();this.publish(true)}});else PMsg.stop();
     const lr=link&&link.race;
     if(this.race&&this.race.opts.startType==='mass'&&!this.t0){if(lr&&lr.status==='started')this.t0=lr.startAt||Date.now();else this.waiting=true}
     if(!rs&&!this.waiting&&!this.t0&&this.pts[0].type!=='start')this.t0=Date.now();
@@ -780,14 +782,15 @@ const Run={map:null,lay:null,
   publish(force){
     if(!this.link)return;const now=Date.now();if(!force&&now-this.lastPub<5000)return;this.lastPub=now;const f=GPS.last;
     this.link.publishState({pid:this.pid,name:this.participant||'Coureur',status:this.status(),startAt:this.t0,finishAt:this.finishAt,
-      visited:this.splits.filter(s=>s.id&&s.mode!=='skip').map(s=>({id:s.id,el:s.elapsed,leg:s.leg,m:s.mode==='manual'?'manual':'auto'})),score:0,pen:0,net:0,
+      visited:this.splits.filter(s=>s.id&&s.mode!=='skip').map(s=>({id:s.id,el:s.elapsed,leg:s.leg,m:s.mode==='manual'?'manual':'auto',d:s.d})),score:0,pen:0,net:0,
+      dist:this.t0?Math.round(this.dist):0,spd:this.status()==='running'&&!this.pausedAt?this.sm.value():undefined,sos:PMsg.on&&PMsg.sosActive()||undefined,endBy:this.endBy||undefined,
       pos:f?{lat:+f.lat.toFixed(6),lon:+f.lon.toFixed(6),acc:f.sim?3:Math.round(f.acc),t:f.t,sim:f.sim?1:undefined}:null,bat:Battery.level,app:NATIVE?'android':'web',og:settings.profile,upd:now});
     if(force||now-this.lastTrk>60000){this.lastTrk=now;const e=encTrack(this.track.slice(-3000));if(e)this.link.publishTrack(this.pid,this.participant||'Coureur',e)}
   },
   saveSoon(){if(Date.now()-this.lastSave>20000)this.save()},
   save(){if(this.ended)return;this.lastSave=Date.now();
     store.set(K.active,{id:this.id,course:this.c,participant:this.participant,date:this.date,idx:this.idx,splits:this.splits,t0:this.t0,
-      pausedTotal:this.pausedTotal+(this.pausedAt?Date.now()-this.pausedAt:0),track:this.track.slice(-1500),pid:this.pid,race:this.race})},
+      pausedTotal:this.pausedTotal+(this.pausedAt?Date.now()-this.pausedAt:0),track:this.track.slice(-1500),pid:this.pid,race:this.race,dist:this.dist,msg:PMsg.on?PMsg.snapshot():undefined})},
   async checkActive(){
     const a=store.get(K.active,null);if(!a||!a.course)return true;
     const v=await modal({title:'Une épreuve est déjà en cours',body:`<p>${esc(a.course.name)}</p>`,buttons:[{label:'Reprendre cette épreuve',value:'r',primary:true},{label:'L\'abandonner',value:'n',danger:true},{label:'Annuler',value:'c'}]});
@@ -822,6 +825,8 @@ const Run={map:null,lay:null,
     this.lastFixT=Date.now();
     if(this.lostSaid){this.lostSaid=false;this.announce('Signal GPS retrouvé. '+this.guidance())}
     if(!this.ended&&f.acc<=30){const tr=this.track,l=tr[tr.length-1];if(!l||dist({lat:l[0],lon:l[1]},f)>=3)tr.push([+f.lat.toFixed(6),+f.lon.toFixed(6),Date.now()])}
+    if(!this.ended&&this.t0&&!this.pausedAt&&!this.waiting&&f.acc<=30){const p={lat:f.lat,lon:f.lon,t:Date.now()},l=this.dlast;
+      if(!l)this.dlast=p;else{const d=dist(l,p);if(d>=5){if(d/Math.max(1,(p.t-l.t)/1000)<20)this.dist+=d;this.dlast=p}}this.sm.add(f)}
     if(this.ended)return;
     this.compute(f);this.render();this.updateMap();
     if(this.pausedAt)return;
@@ -878,7 +883,8 @@ const Run={map:null,lay:null,
     const t=this.target(),now=Date.now();
     if(t.type==='start'&&!this.t0)this.t0=now;
     const el=this.elapsed(),prev=this.splits.length?this.splits[this.splits.length-1].elapsed:0,f=GPS.last;
-    this.splits.push({id:t.id,name:t.name,type:t.type,elapsed:el,leg:el-prev,mode,lat:f?+f.lat.toFixed(6):t.lat,lon:f?+f.lon.toFixed(6):t.lon,time:new Date(now).toISOString()});
+    if(t.type==='start'){this.dist=0;this.dlast=null}
+    this.splits.push({id:t.id,name:t.name,type:t.type,elapsed:el,leg:el-prev,mode,lat:f?+f.lat.toFixed(6):t.lat,lon:f?+f.lon.toFixed(6):t.lon,time:new Date(now).toISOString(),d:Math.round(this.dist)});
     this.idx++;this.inZone=false;this.insideSince=null;this.route=null;this.lastRouteT=0;this.lastAnnDist=null;this.d=null;
     if(this.idx>=this.pts.length){this.finish(true);return}
     this.publish(true);this.save();
@@ -894,13 +900,13 @@ const Run={map:null,lay:null,
     this.ended=true;this.waiting=false;Lock.disable(true);RunOpts.hide();clearInterval(this.tickI);clearInterval(this.beepI);
     if(this.pausedAt){this.pausedTotal+=Date.now()-this.pausedAt;this.pausedAt=null}
     const total=this.elapsed();
-    this.rstatus=done?'finished':(why||'abandoned');this.finishAt=this.t0?this.t0+total+this.pausedTotal:null;
-    store.del(K.active);this.publish(true);
+    this.rstatus=done?'finished':(why||'abandoned');this.finishAt=this.t0?this.t0+total+this.pausedTotal:null;this.endBy=done||why==='closed'?null:'runner';
+    store.del(K.active);this.publish(true);PMsg.stop();
     const link=this.link;if(link)setTimeout(()=>{try{link.close()}catch(e){}if(this.link===link)this.link=null},4000);
     if(done){Snd.fanfare();vib([300,100,300,100,600]);this.announce(`Arrivée ! Parcours terminé en ${spokenTime(total)}. Bravo !`)}
     else this.announce(why==='closed'?'Course close par l\'organisateur. Vos temps sont enregistrés.':'Épreuve arrêtée.');
     const r={id:this.id,courseId:this.c.id,courseName:this.c.name,participant:this.participant,date:this.date,total,finished:done,
-      nPoints:this.pts.length,splits:this.splits,track:this.track.slice(-4000),radius:this.rad(),raceCode:this.race?this.race.code:undefined};
+      nPoints:this.pts.length,splits:this.splits,track:this.track.slice(-4000),radius:this.rad(),raceCode:this.race?this.race.code:undefined,dist:Math.round(this.dist)};
     results.push(r);saveResults();
     if(this.unsub)this.unsub();this.unsub=null;GPS.stop();Wake.off();
     setTimeout(()=>Results.show(r),done?2500:400);
@@ -1026,8 +1032,10 @@ const Results={cur:null,
     this.cur=r;
     $('#rsHead').innerHTML=`<p><b>${esc(r.courseName)}</b>${r.participant?' · '+esc(r.participant):''}</p><p class="hint">${new Date(r.date).toLocaleString('fr-FR')} · rayon de validation ${r.radius} m${r.finished?'':' · <b style="color:var(--warn)">épreuve arrêtée avant la fin</b>'}</p>`;
     $('#rsTotal').textContent=fmtTime(r.total);
-    const lab={auto:'auto',manual:'manuelle',skip:'passée'};
-    $('#rsTable').innerHTML=`<thead><tr><th>Point</th><th class="num">Inter.</th><th class="num">Cumul</th><th>Valid.</th></tr></thead><tbody>${r.splits.map(s=>`<tr><td>${esc(s.name)}</td><td class="num">${s.type==='start'?'–':fmtTime(s.leg)}</td><td class="num">${fmtTime(s.elapsed)}</td><td><span class="tag ${s.mode}">${lab[s.mode]}</span></td></tr>`).join('')}</tbody>`;
+    if(r.dist)$('#rsHead').insertAdjacentHTML('beforeend',`<p class="hint">📏 ${fmtDist(r.dist)}${r.total>30000?` · moyenne ${kmh(r.dist/(r.total/1000))}`:''}</p>`);
+    const lab={auto:'auto',manual:'manuelle',skip:'passée'},hasD=r.splits.some(s=>s.d!=null&&s.type!=='start');let pd=0;
+    const lg=r.splits.map(s=>{if(s.d==null||s.type==='start'||s.mode==='skip'){if(s.d!=null&&s.mode!=='skip')pd=s.d;return'–'}const ld=Math.max(0,s.d-pd);pd=s.d;return fmtDist(ld)});
+    $('#rsTable').innerHTML=`<thead><tr><th>Point</th><th class="num">Inter.</th><th class="num">Cumul</th>${hasD?'<th class="num">Dist.</th>':''}<th>Valid.</th></tr></thead><tbody>${r.splits.map((s,k)=>`<tr><td>${esc(s.name)}</td><td class="num">${s.type==='start'?'–':fmtTime(s.leg)}</td><td class="num">${fmtTime(s.elapsed)}</td>${hasD?`<td class="num">${lg[k]}</td>`:''}<td><span class="tag ${s.mode}">${lab[s.mode]}</span></td></tr>`).join('')}</tbody>`;
     show('results');
   },
   fname(){const r=this.cur;return slug('resultat_'+r.courseName+(r.participant?'_'+r.participant:''))+'.gpx'},
@@ -1044,18 +1052,22 @@ if(NATIVE){$('#dtDownload').textContent='💾 Enregistrer le GPX';$('#rsDownload
 try{history.replaceState({s:'home'},'')}catch(e){}
 if(!NATIVE&&'serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('./sw.js').catch(()=>{});
 const joinHash=()=>{const m=/^#join-([0-9A-Za-z-]+)/.exec(location.hash);if(!m)return null;try{history.replaceState({s:'home'},'',location.pathname+location.search)}catch(e){}return m[1]};
-window.addEventListener('hashchange',()=>{const c=joinHash();if(c)Join.open(c)});
+/* lien organisateur : #orga-CODE.JETON */
+const orgaLink=u=>{const m=/orga-([0-9A-Za-z]{6,})\.([0-9A-Za-z]{6,})/.exec(String(u||''));if(!m)return null;const code=normCode(m[1]);return validCode(code)?{code,token:m[2].toLowerCase()}:null};
+const orgaHash=()=>{const r=/^#orga-/.test(location.hash)?orgaLink(location.hash):null;if(r)try{history.replaceState({s:'home'},'',location.pathname+location.search)}catch(e){}return r};
+window.addEventListener('hashchange',()=>{const g=orgaHash();if(g){OrgJoin.open(g.code,g.token);return}const c=joinHash();if(c)Join.open(c)});
 /* application Android ouverte par un lien oguide://join-CODE (bouton de la page web) */
 const linkCode=u=>{const c=normCode(u||'');return validCode(c)?c:null};
-function openFromLink(c){
+function openFromLink(c,g){
   if(current==='run'&&!Run.ended){toast('Termine d\'abord ton épreuve en cours.',true);Voice.say('Une épreuve est en cours.');return}
   if(current==='follow'&&Follow.on){toast('Un suivi est déjà en cours.',true);return}
-  Join.open(c);
+  if(g)OrgJoin.open(g.code,g.token);else Join.open(c);
 }
-if(NATIVE&&P.app){try{P.app.addListener('appUrlOpen',e=>{const c=linkCode(e&&e.url);if(c)openFromLink(c)})}catch(e){}}
+if(NATIVE&&P.app){try{P.app.addListener('appUrlOpen',e=>{const u=e&&e.url,g=orgaLink(u);if(g){openFromLink(null,g);return}const c=linkCode(u);if(c)openFromLink(c)})}catch(e){}}
 (async()=>{
+  const g=orgaHash();if(g){OrgJoin.open(g.code,g.token);return}
   const jc=joinHash();if(jc){Join.open(jc);return}
-  if(NATIVE&&P.app){try{const r=await P.app.getLaunchUrl();const lc=r&&linkCode(r.url);if(lc){openFromLink(lc);return}}catch(e){}}
+  if(NATIVE&&P.app){try{const r=await P.app.getLaunchUrl(),u=r&&r.url,lg=orgaLink(u);if(lg){openFromLink(null,lg);return}const lc=linkCode(u);if(lc){openFromLink(lc);return}}catch(e){}}
   if(store.get(K.follow,null)){Follow.resume();return}
   const act=store.get(K.active,null);
   if(act&&act.course){Voice.say('Une épreuve n\'est pas terminée. Touchez Reprendre l\'épreuve pour continuer.');
@@ -1064,5 +1076,5 @@ if(NATIVE&&P.app){try{P.app.addListener('appUrlOpen',e=>{const c=linkCode(e&&e.u
   const dr=store.get(K.draft,null);if(dr&&dr.points&&dr.points.length){
   const v=await modal({title:'Parcours en cours de création',body:`<p>Un brouillon avec ${dr.points.length} point(s) a été retrouvé.</p>`,buttons:[{label:'Reprendre la création',value:true,primary:true},{label:'Plus tard',value:false}]});
   if(v){Create.draft=dr;Create.open()}}})();
-window.OGuide={PrintMap,Org,OrgSetup,TrainSetup,Follow,Join,Replay,RaceLink,store,K,trackDist,appIntent,RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
+window.OGuide={PMsg,OrgJoin,LayerPick,SpeedMeter,QUICK_P,QUICK_O,settings:()=>settings,PrintMap,Org,OrgSetup,TrainSetup,Follow,Join,Replay,RaceLink,store,K,trackDist,appIntent,RunOpts,GPS,Run,Create,Lib,parseGPX,courseToGPX,Paths,Router,Compass,tiltHeading,currentHeading,Walk,get courses(){return courses},settings:()=>settings};
 })();
