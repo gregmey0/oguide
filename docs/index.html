@@ -973,7 +973,7 @@ body.ui-acc .screen:not(#run):not(#follow):not(#welcome) main button:not(.big):n
 .welcome{justify-content:center;gap:1rem;max-width:560px;margin:0 auto;width:100%}
 .welcome .brand{justify-content:center}
 .wq{font-size:1.45rem;font-weight:700;text-align:center;margin:.4rem 0 0}
-.wbtn{flex-direction:column;min-height:28vh;font-size:1.6rem;border-radius:24px;gap:.35rem}
+.wbtn{flex-direction:column;min-height:23vh;font-size:1.5rem;border-radius:24px;gap:.35rem}
 .wbtn span{font-size:2.6rem;line-height:1}
 .wbtn small{font-size:1rem;font-weight:400;max-width:22em}
 .wrem{justify-content:center;font-size:1rem}
@@ -981,6 +981,7 @@ body.ui-acc .screen:not(#run):not(#follow):not(#welcome) main button:not(.big):n
 .seg.seg3>button{min-height:62px;flex-direction:row;justify-content:flex-start;text-align:left;gap:.6rem;font-size:1.05rem}
 .seg.seg3>button small{font-size:.85rem}
 .brand h1:focus{outline:none}
+.wnote{text-align:center;margin:0}
 </style>
 </head>
 <body>
@@ -991,9 +992,10 @@ body.ui-acc .screen:not(#run):not(#follow):not(#welcome) main button:not(.big):n
 <section id="welcome" class="screen">
   <main class="welcome">
     <div class="brand"><div class="logo"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#000"/><rect x="96" y="96" width="320" height="320" rx="20" fill="#fff"/><polygon points="96,96 416,96 416,416" fill="#FF7A00"/><rect x="96" y="96" width="320" height="320" rx="20" fill="none" stroke="#FFD400" stroke-width="24"/></svg></div><div><h1 tabindex="-1">O'Guide</h1><p>Course d'orientation accessible</p></div></div>
-    <p class="wq" id="wQ">Qui utilise l'application ?</p>
-    <button type="button" class="primary wbtn" id="wDv"><span aria-hidden="true">👂</span> Déficience visuelle<small>Grands boutons, tout est lu à voix haute</small></button>
-    <button type="button" class="wbtn" id="wAcc"><span aria-hidden="true">🤝</span> Accompagnant<small>Enseignant, guide, organisateur : menus plus compacts</small></button>
+    <p class="wq" id="wQ">Qui utilise les menus ?</p>
+    <button type="button" class="primary wbtn" id="wDv"><span aria-hidden="true">👂</span> Déficience visuelle<small>La personne utilise seule les menus : grands boutons, tout est lu à voix haute</small></button>
+    <button type="button" class="wbtn" id="wAcc"><span aria-hidden="true">🤝</span> Avec un accompagnant<small>L'accompagnant utilise les menus, plus compacts. Le guidage de l'épreuve reste vocal.</small></button>
+    <p class="hint wnote">Dans les deux cas, le coureur est guidé à la voix pendant l'épreuve.</p>
     <label class="chk wrem"><input type="checkbox" id="wRemember"> Retenir ce choix (modifiable dans les Réglages)</label>
   </main>
 </section>
@@ -1092,9 +1094,10 @@ body.ui-acc .screen:not(#run):not(#follow):not(#welcome) main button:not(.big):n
       <h2>Interface des menus</h2>
       <div class="seg seg3" data-s="uiMode">
         <button type="button" data-v="dv" aria-pressed="false">👂 Grands boutons<small>déficience visuelle</small></button>
-        <button type="button" data-v="acc" aria-pressed="false">🤝 Compacte<small>accompagnant</small></button>
+        <button type="button" data-v="acc" aria-pressed="false">🤝 Compacte<small>avec un accompagnant</small></button>
         <button type="button" data-v="ask" aria-pressed="false">❓ Demander<small>à chaque ouverture</small></button>
       </div>
+      <p class="hint">Ne change que les menus. Le guidage vocal de l'épreuve est le même dans les deux interfaces.</p>
     </section>
     <section class="card">
       <h2>Profil</h2>
@@ -1295,7 +1298,7 @@ body.ui-acc .screen:not(#run):not(#follow):not(#welcome) main button:not(.big):n
   <main class="help">
     <h2>Accueil et interface</h2>
     <ul>
-      <li>À l'ouverture, O'Guide demande qui l'utilise : <b>Déficience visuelle</b> (grands boutons, tout est lu à voix haute) ou <b>Accompagnant</b> (menus plus compacts). Coche « Retenir ce choix » pour ne plus la poser ; le réglage « Interface des menus » et le bouton <b>↔</b> de l'accueil permettent de changer.</li>
+      <li>À l'ouverture, O'Guide demande qui utilise les menus : <b>Déficience visuelle</b> (la personne seule : grands boutons, tout est lu à voix haute) ou <b>Avec un accompagnant</b> (l'accompagnant utilise les menus, plus compacts). Dans les deux cas, le guidage de l'épreuve reste vocal. Coche « Retenir ce choix » pour ne plus la poser ; le réglage « Interface des menus » et le bouton <b>↔</b> de l'accueil permettent de changer.</li>
       <li>Ce qui est en cours (épreuve à reprendre, suivi, course que tu organises) reste en haut de l'accueil. Le reste est dans <b>🗂 Historique</b>, en bas : tes épreuves et les courses organisées terminées.</li>
     </ul>
     <h2>1. Créer un parcours</h2>
@@ -4145,10 +4148,10 @@ const Welcome={
   ask(){return new Promise(res=>{
     this.done=res;show('welcome');$('#wRemember').checked=false;
     const last=uiNow();$('#wDv').classList.toggle('primary',last!=='acc');$('#wAcc').classList.toggle('primary',last==='acc');
-    setTimeout(()=>Voice.say('O\'Guide. Choisissez l\'interface. En haut de l\'écran : déficience visuelle, grands boutons. En bas : accompagnant.'),400);
+    setTimeout(()=>Voice.say('O\'Guide. Qui utilise les menus ? En haut de l\'écran : déficience visuelle, grands boutons. En bas : avec un accompagnant. Le guidage de l\'épreuve reste vocal dans les deux cas.'),400);
   })},
   pick(m){settings.lastUi=m;if($('#wRemember').checked)settings.uiMode=m;saveSettings();applyUi();Voice.stop&&Voice.stop();
-    Voice.say(m==='acc'?'Interface accompagnant.':'Interface grands boutons.');show('home');const f=this.done;this.done=null;if(f)f(m)}
+    Voice.say(m==='acc'?'Interface avec accompagnant. Le guidage reste vocal.':'Interface grands boutons.');show('home');const f=this.done;this.done=null;if(f)f(m)}
 };
 $('#wDv').onclick=()=>Welcome.pick('dv');
 $('#wAcc').onclick=()=>Welcome.pick('acc');
@@ -4195,7 +4198,7 @@ $('#histList').addEventListener('click',e=>{
 });
 $('#hHist').onclick=()=>show('history');
 $('#hUi').onclick=()=>{const m=uiNow()==='acc'?'dv':'acc';settings.lastUi=m;if(settings.uiMode!=='ask')settings.uiMode=m;saveSettings();applyUi();
-  toast(m==='acc'?'🤝 Interface compacte (accompagnant)':'👂 Interface grands boutons');Voice.say(m==='acc'?'Interface compacte.':'Interface grands boutons.')};
+  toast(m==='acc'?'🤝 Interface compacte (avec un accompagnant), guidage vocal inchangé':'👂 Interface grands boutons');Voice.say(m==='acc'?'Interface compacte.':'Interface grands boutons.')};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();Home.deferred=e;$('#hInstall').hidden=false});
 $('#hInstall').onclick=async()=>{if(!Home.deferred)return;Home.deferred.prompt();try{await Home.deferred.userChoice}catch(e){}Home.deferred=null;$('#hInstall').hidden=true};
 $('#hCreate').onclick=()=>Create.begin();

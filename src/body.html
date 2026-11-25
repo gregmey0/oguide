@@ -5,9 +5,10 @@
 <section id="welcome" class="screen">
   <main class="welcome">
     <div class="brand"><div class="logo"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#000"/><rect x="96" y="96" width="320" height="320" rx="20" fill="#fff"/><polygon points="96,96 416,96 416,416" fill="#FF7A00"/><rect x="96" y="96" width="320" height="320" rx="20" fill="none" stroke="#FFD400" stroke-width="24"/></svg></div><div><h1 tabindex="-1">O'Guide</h1><p>Course d'orientation accessible</p></div></div>
-    <p class="wq" id="wQ">Qui utilise l'application ?</p>
-    <button type="button" class="primary wbtn" id="wDv"><span aria-hidden="true">👂</span> Déficience visuelle<small>Grands boutons, tout est lu à voix haute</small></button>
-    <button type="button" class="wbtn" id="wAcc"><span aria-hidden="true">🤝</span> Accompagnant<small>Enseignant, guide, organisateur : menus plus compacts</small></button>
+    <p class="wq" id="wQ">Qui utilise les menus ?</p>
+    <button type="button" class="primary wbtn" id="wDv"><span aria-hidden="true">👂</span> Déficience visuelle<small>La personne utilise seule les menus : grands boutons, tout est lu à voix haute</small></button>
+    <button type="button" class="wbtn" id="wAcc"><span aria-hidden="true">🤝</span> Avec un accompagnant<small>L'accompagnant utilise les menus, plus compacts. Le guidage de l'épreuve reste vocal.</small></button>
+    <p class="hint wnote">Dans les deux cas, le coureur est guidé à la voix pendant l'épreuve.</p>
     <label class="chk wrem"><input type="checkbox" id="wRemember"> Retenir ce choix (modifiable dans les Réglages)</label>
   </main>
 </section>
@@ -106,9 +107,10 @@
       <h2>Interface des menus</h2>
       <div class="seg seg3" data-s="uiMode">
         <button type="button" data-v="dv" aria-pressed="false">👂 Grands boutons<small>déficience visuelle</small></button>
-        <button type="button" data-v="acc" aria-pressed="false">🤝 Compacte<small>accompagnant</small></button>
+        <button type="button" data-v="acc" aria-pressed="false">🤝 Compacte<small>avec un accompagnant</small></button>
         <button type="button" data-v="ask" aria-pressed="false">❓ Demander<small>à chaque ouverture</small></button>
       </div>
+      <p class="hint">Ne change que les menus. Le guidage vocal de l'épreuve est le même dans les deux interfaces.</p>
     </section>
     <section class="card">
       <h2>Profil</h2>
@@ -309,7 +311,7 @@
   <main class="help">
     <h2>Accueil et interface</h2>
     <ul>
-      <li>À l'ouverture, O'Guide demande qui l'utilise : <b>Déficience visuelle</b> (grands boutons, tout est lu à voix haute) ou <b>Accompagnant</b> (menus plus compacts). Coche « Retenir ce choix » pour ne plus la poser ; le réglage « Interface des menus » et le bouton <b>↔</b> de l'accueil permettent de changer.</li>
+      <li>À l'ouverture, O'Guide demande qui utilise les menus : <b>Déficience visuelle</b> (la personne seule : grands boutons, tout est lu à voix haute) ou <b>Avec un accompagnant</b> (l'accompagnant utilise les menus, plus compacts). Dans les deux cas, le guidage de l'épreuve reste vocal. Coche « Retenir ce choix » pour ne plus la poser ; le réglage « Interface des menus » et le bouton <b>↔</b> de l'accueil permettent de changer.</li>
       <li>Ce qui est en cours (épreuve à reprendre, suivi, course que tu organises) reste en haut de l'accueil. Le reste est dans <b>🗂 Historique</b>, en bas : tes épreuves et les courses organisées terminées.</li>
     </ul>
     <h2>1. Créer un parcours</h2>

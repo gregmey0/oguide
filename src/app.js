@@ -472,10 +472,10 @@ const Welcome={
   ask(){return new Promise(res=>{
     this.done=res;show('welcome');$('#wRemember').checked=false;
     const last=uiNow();$('#wDv').classList.toggle('primary',last!=='acc');$('#wAcc').classList.toggle('primary',last==='acc');
-    setTimeout(()=>Voice.say('O\'Guide. Choisissez l\'interface. En haut de l\'écran : déficience visuelle, grands boutons. En bas : accompagnant.'),400);
+    setTimeout(()=>Voice.say('O\'Guide. Qui utilise les menus ? En haut de l\'écran : déficience visuelle, grands boutons. En bas : avec un accompagnant. Le guidage de l\'épreuve reste vocal dans les deux cas.'),400);
   })},
   pick(m){settings.lastUi=m;if($('#wRemember').checked)settings.uiMode=m;saveSettings();applyUi();Voice.stop&&Voice.stop();
-    Voice.say(m==='acc'?'Interface accompagnant.':'Interface grands boutons.');show('home');const f=this.done;this.done=null;if(f)f(m)}
+    Voice.say(m==='acc'?'Interface avec accompagnant. Le guidage reste vocal.':'Interface grands boutons.');show('home');const f=this.done;this.done=null;if(f)f(m)}
 };
 $('#wDv').onclick=()=>Welcome.pick('dv');
 $('#wAcc').onclick=()=>Welcome.pick('acc');
@@ -522,7 +522,7 @@ $('#histList').addEventListener('click',e=>{
 });
 $('#hHist').onclick=()=>show('history');
 $('#hUi').onclick=()=>{const m=uiNow()==='acc'?'dv':'acc';settings.lastUi=m;if(settings.uiMode!=='ask')settings.uiMode=m;saveSettings();applyUi();
-  toast(m==='acc'?'🤝 Interface compacte (accompagnant)':'👂 Interface grands boutons');Voice.say(m==='acc'?'Interface compacte.':'Interface grands boutons.')};
+  toast(m==='acc'?'🤝 Interface compacte (avec un accompagnant), guidage vocal inchangé':'👂 Interface grands boutons');Voice.say(m==='acc'?'Interface compacte.':'Interface grands boutons.')};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();Home.deferred=e;$('#hInstall').hidden=false});
 $('#hInstall').onclick=async()=>{if(!Home.deferred)return;Home.deferred.prompt();try{await Home.deferred.userChoice}catch(e){}Home.deferred=null;$('#hInstall').hidden=true};
 $('#hCreate').onclick=()=>Create.begin();

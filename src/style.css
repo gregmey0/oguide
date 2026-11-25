@@ -295,7 +295,7 @@ body.ui-acc .screen:not(#run):not(#follow):not(#welcome) main button:not(.big):n
 .welcome{justify-content:center;gap:1rem;max-width:560px;margin:0 auto;width:100%}
 .welcome .brand{justify-content:center}
 .wq{font-size:1.45rem;font-weight:700;text-align:center;margin:.4rem 0 0}
-.wbtn{flex-direction:column;min-height:28vh;font-size:1.6rem;border-radius:24px;gap:.35rem}
+.wbtn{flex-direction:column;min-height:23vh;font-size:1.5rem;border-radius:24px;gap:.35rem}
 .wbtn span{font-size:2.6rem;line-height:1}
 .wbtn small{font-size:1rem;font-weight:400;max-width:22em}
 .wrem{justify-content:center;font-size:1rem}
@@ -303,3 +303,4 @@ body.ui-acc .screen:not(#run):not(#follow):not(#welcome) main button:not(.big):n
 .seg.seg3>button{min-height:62px;flex-direction:row;justify-content:flex-start;text-align:left;gap:.6rem;font-size:1.05rem}
 .seg.seg3>button small{font-size:.85rem}
 .brand h1:focus{outline:none}
+.wnote{text-align:center;margin:0}
